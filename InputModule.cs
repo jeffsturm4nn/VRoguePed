@@ -21,8 +21,8 @@ namespace VRoguePed
         {
             RegisterControlKey("ToggleModActiveKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleModActiveKey", "None"),
                 (Action)ToggleModActiveProc, TriggerCondition.PRESSED);
-            
-//RegisterControlKey("ToggleDebugInfoKey", settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
+
+            //RegisterControlKey("ToggleDebugInfoKey", settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
             //(Action)delegate { DebugMode = !DebugMode; }, TriggerCondition.PRESSED, true);
         }
 
