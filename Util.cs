@@ -12,5 +12,10 @@ namespace VRoguePed
         {
             GTA.UI.Notification.PostTicker(message, important);
         }
+
+        public static void Subtitle(string message, int durationInMs = 1900)
+        {
+            GTA.UI.Screen.ShowSubtitle(message, durationInMs);
+        }
     }
 }
