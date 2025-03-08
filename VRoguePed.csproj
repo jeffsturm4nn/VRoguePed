@@ -72,6 +72,7 @@
     <Compile Include="Core.cs" />
     <Compile Include="TriggerCondition.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="VehicleUtil.cs" />
     <Compile Include="VRoguePedMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
