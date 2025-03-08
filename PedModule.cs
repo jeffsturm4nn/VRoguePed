@@ -16,7 +16,7 @@ namespace VRoguePed
         {
             try
             {
-                Ped roguePed = World.GetNearbyPeds(Game.Player.Character, 40f)
+                Ped roguePed = World.GetNearbyPeds(Game.Player.Character, 45f)
                      .Where(p => p != null
                         && p.Exists()
                         && p != Game.Player.Character
@@ -33,7 +33,7 @@ namespace VRoguePed
                     return;
                 }
 
-                Ped victimPed = World.GetNearbyPeds(roguePed, 40f)
+                Ped victimPed = World.GetNearbyPeds(roguePed, 45f)
                     .Where(p => p != null
                     && p.Exists()
                     && p != roguePed
@@ -66,13 +66,15 @@ namespace VRoguePed
 
                 if (rogueVehicle != null && rogueVehicle.Exists() && rogueVehicle.IsDriveable)
                 {
-                    taskSequence.AddTask.RunTo(rogueVehicle.Position, false);
+                    //taskSequence.AddTask.RunTo(rogueVehicle.Position, false);
                     taskSequence.AddTask.EnterVehicle(rogueVehicle, VehicleSeat.Driver);
-                    taskSequence.AddTask.DriveTo(rogueVehicle, airportEntracePosition, 30f, 15f, (int)DrivingStyle.Rushed);
+                    taskSequence.AddTask.DriveTo(rogueVehicle, airportEntracePosition, 50f, 15f, (int)DrivingStyle.Rushed);
                 }
                 taskSequence.Close();
 
                 roguePed.Task.PerformSequence(taskSequence);
+                taskSequence.Dispose();
+
                 Util.Subtitle("MakePedGoRogueProc() called.", 1700);
             }
             catch (Exception e)
