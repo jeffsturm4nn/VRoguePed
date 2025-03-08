@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using GTA;
 
 using static VRoguePed.Core;
+using static VRoguePed.PedModule;
 
 /*
  * 
@@ -21,6 +22,9 @@ namespace VRoguePed
         {
             RegisterControlKey("ToggleModActiveKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleModActiveKey", "None"),
                 (Action)ToggleModActiveProc, TriggerCondition.PRESSED);
+
+            RegisterControlKey("MakePedGoRogueKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakePedGoRogueKey", "None"),
+                (Action)MakePedGoRogueProc, TriggerCondition.PRESSED);
 
             //RegisterControlKey("ToggleDebugInfoKey", settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
             //(Action)delegate { DebugMode = !DebugMode; }, TriggerCondition.PRESSED, true);
@@ -75,17 +79,6 @@ namespace VRoguePed
                         control.wasPressed = false;
                         //break;
                     }
-                }
-            }
-        }
-
-        public static void CheckForGTAControlsPressed()
-        {
-            if (Game.Player.Character.IsAlive && Game.Player.Character.IsInFlyingVehicle)
-            {
-                if (Game.IsControlJustPressed(GTA.Control.VehicleExit))
-                {
-                    //DeleteAllTransportHooks();
                 }
             }
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml.Serialization;
 
 using GTA;
@@ -18,6 +19,7 @@ namespace VRoguePed
             try
             {
                 this.Tick += OnTick;
+                this.KeyDown += OnKeyDown;
                 this.Interval = Constants.UPDATE_INTERVAL;
 
                 InitializeScript();
@@ -43,7 +45,48 @@ namespace VRoguePed
                 return;
             }
 
-            
+            InputModule.CheckForKeysHeldDown();
+            InputModule.CheckForKeysReleased();
+        }
+
+        public void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                for (int i = 0; i < ControlKeys.Count; i++)
+                {
+                    if (!ModActive)
+                    {
+                        if (ControlKeys[i].name == "ToggleModActiveKey" && Keyboard.IsKeyListPressed(ControlKeys[i].keys))
+                        {
+                            ControlKeys[i].callback.Invoke();
+                            ControlKeys[i].wasPressed = true;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (ControlKeys[i].condition.HasFlag(TriggerCondition.PRESSED) && Keyboard.IsKeyListPressed(ControlKeys[i].keys))
+                        {
+                            if (!ControlKeys[i].wasPressed)
+                            {
+                                ControlKeys[i].callback.Invoke();
+                                ControlKeys[i].wasPressed = true;
+                            }
+
+                            break;
+                        }
+                        else if (ControlKeys[i].condition.HasFlag(TriggerCondition.HELD) && Keyboard.IsKeyListPressed(ControlKeys[i].keys))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                Util.Notify("VRoguePed OnKeyDown Error:\n" + exc.ToString(), false);
+            }
         }
     }
 }

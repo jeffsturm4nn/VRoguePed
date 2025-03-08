@@ -19,6 +19,15 @@ namespace VRoguePed
         public static void ToggleModActiveProc()
         {
             ModActive = !ModActive;
+            
+            if(ModActive)
+            {
+                Util.Subtitle("{ VRoguePed Enabled }", 1700);
+            }
+            else
+            {
+                Util.Subtitle("{ VRoguePed Disabled }", 1700);
+            }
         }
 
         public static void ProcessConfigFile()
@@ -32,7 +41,7 @@ namespace VRoguePed
                     Util.Notify("VRoguePed Config File Error:\n" + CONFIG_FILE_PATH + " could not be found.\nAll settings were set to default.", true);
                 }
 
-                ModActive = settings.GetValue("GLOBAL_VARS", "ENABLE_ON_GAME_LOAD", true);
+                ModActive = settings.GetValue("GLOBAL_VARS", "ENABLE_ON_GAME_LOAD", false);
                 
                 InputModule.InitControlKeysFromConfig(settings);
                                 

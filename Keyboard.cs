@@ -30,12 +30,12 @@ namespace VRoguePed
                 return false;
             }
             else if (key == MOUSE_WHEEL_UP_KEY &&
-                Game.IsControlPressed(GTA.Control.WeaponWheelPrev))
+                Game.IsControlPressed(2, GTA.Control.WeaponWheelPrev))
             {
                 return true;
             }
             else if (key == MOUSE_WHEEL_DOWN_KEY &&
-                Game.IsControlPressed(GTA.Control.WeaponWheelNext))
+                Game.IsControlPressed(2, GTA.Control.WeaponWheelNext))
             {
                 return true;
             }
