@@ -17,7 +17,7 @@ namespace VRoguePed
                         && v.Exists()
                         && v.IsDriveable
                         && !v.IsUpsideDown
-                        && v.WheelType != VehicleWheelType.BikeWheels
+                        //&& v.WheelType != VehicleWheelType.BikeWheels
                         && v.IsStopped)
                     .OrderBy(p => Math.Abs(p.Position.DistanceTo(ped.Position)))
                     .FirstOrDefault();

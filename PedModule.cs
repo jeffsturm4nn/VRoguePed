@@ -1,16 +1,21 @@
 ﻿using GTA;
 using GTA.Math;
+using GTA.Native;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace VRoguePed
 {
     internal class PedModule
     {
-        private static Vector3 airportEntracePosition = new Vector3(-1337.0f, -3044.0f, 13.9f);
+        private static readonly Vector3 airportEntracePosition = new Vector3(-1337.0f, -3044.0f, 13.9f);
+
+        private static WeaponHash RoguePedWeaponHash = WeaponHash.Pistol50;
 
         public static void MakePedGoRogueProc()
         {
@@ -20,7 +25,7 @@ namespace VRoguePed
                      .Where(p => p != null
                         && p.Exists()
                         && p != Game.Player.Character
-                        //&& !p.IsRagdoll
+                        && !p.IsRagdoll
                         && p.IsAlive
                         && p.IsHuman
                         && p.IsOnFoot)
@@ -51,22 +56,27 @@ namespace VRoguePed
                     return;
                 }
 
-                roguePed.Weapons.Give(GTA.Native.WeaponHash.Pistol50, 99, true, true);
+                roguePed.Weapons.Give(RoguePedWeaponHash, 99, true, true);
+                roguePed.MaxHealth = 300;
+                roguePed.Health = 300;
+                roguePed.RelationshipGroup = (int)Relationship.Companion;
 
                 TaskSequence taskSequence = new TaskSequence();
 
-                taskSequence.AddTask.ClearAllImmediately();
-                taskSequence.AddTask.LookAt(victimPed, 5000);
+                taskSequence.AddTask.ClearAll();
                 taskSequence.AddTask.RunTo(victimPed.Position, false);
-                taskSequence.AddTask.StandStill(3000);
-                taskSequence.AddTask.AimAt(victimPed, 1000);
-                taskSequence.AddTask.ShootAt(victimPed, 6000);
+                //taskSequence.AddTask.StandStill(3000);
+
+                taskSequence.AddTask.FightAgainst(victimPed);
+
+                //taskSequence.AddTask.AimAt(victimPed, 1000);
+                //taskSequence.AddTask.ShootAt(victimPed, 6000);
 
                 Vehicle rogueVehicle = VehicleUtil.GetNearesVehicle(roguePed);
 
                 if (rogueVehicle != null && rogueVehicle.Exists() && rogueVehicle.IsDriveable)
                 {
-                    //taskSequence.AddTask.RunTo(rogueVehicle.Position, false);
+                    taskSequence.AddTask.RunTo(rogueVehicle.Position, false);
                     taskSequence.AddTask.EnterVehicle(rogueVehicle, VehicleSeat.Driver);
                     taskSequence.AddTask.DriveTo(rogueVehicle, airportEntracePosition, 50f, 15f, (int)DrivingStyle.Rushed);
                 }
@@ -74,12 +84,31 @@ namespace VRoguePed
 
                 roguePed.Task.PerformSequence(taskSequence);
                 taskSequence.Dispose();
-
-                Util.Subtitle("MakePedGoRogueProc() called.", 1700);
             }
             catch (Exception e)
             {
                 Util.Notify("VRoguePed MakePedGoRogueProc() Error:\n" + e.ToString(), true);
+            }
+        }
+
+        public static void ReadPedParamsFromConfig(ScriptSettings settings)
+        {
+            try
+            {
+                String weaponName = settings.GetValue("PED_PARAMETERS", "RoguePedWeaponName", "Pistol50");
+
+                if (weaponName == null || weaponName.Length == 0 ||
+                    weaponName.Equals("None", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    weaponName = "Unarmed";
+                }
+
+                RoguePedWeaponHash = (WeaponHash)Enum.Parse(typeof(WeaponHash), weaponName);
+            }
+            catch (Exception e)
+            {
+                Util.Notify("VRoguePed ReadPedParamsFromConfig() Error:\n " + e.ToString());
+                RoguePedWeaponHash = WeaponHash.Pistol50;
             }
         }
     }

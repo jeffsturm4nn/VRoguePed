@@ -23,10 +23,13 @@ namespace VRoguePed
             RegisterControlKey("ToggleModActiveKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleModActiveKey", "None"),
                 (Action)ToggleModActiveProc, TriggerCondition.PRESSED);
 
+            RegisterControlKey("ReloadConfigFileKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ReloadConfigFileKey", "None"),
+                (Action)ReloadConfigFileProc, TriggerCondition.PRESSED);
+            
             RegisterControlKey("MakePedGoRogueKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakePedGoRogueKey", "None"),
                 (Action)MakePedGoRogueProc, TriggerCondition.PRESSED);
 
-            //RegisterControlKey("ToggleDebugInfoKey", settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
+            //RegisterControlKey("ToggleDebugInfoKey", Settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
             //(Action)delegate { DebugMode = !DebugMode; }, TriggerCondition.PRESSED, true);
         }
 
