@@ -13,7 +13,9 @@ namespace VRoguePed
     internal class Core
     {
         public static bool ModActive = false;
-        public static List<Ped> RoguePeds = new List<Ped>();
+        public static List<RoguePed> RoguePeds = new List<RoguePed>();
+        public static List<Ped> VictimPeds = new List<Ped>();
+        public static List<Ped> ProcessedPeds = new List<Ped>();
         public static List<ControlKey> ControlKeys = new List<ControlKey>();
 
         public static void ToggleModActiveProc()
@@ -32,10 +34,11 @@ namespace VRoguePed
 
         public static void ReloadConfigFileProc()
         {
-            ProcessConfigFile();
+            ProcessConfigFile(true);
+            Util.Notify("VRoguePed: Config file reloaded.");
         }
 
-        public static void ProcessConfigFile()
+        public static void ProcessConfigFile(bool isReloadingConfigs)
         {
             try
             {
@@ -46,9 +49,14 @@ namespace VRoguePed
                     Util.Notify("VRoguePed Config File Error:\n" + CONFIG_FILE_PATH + " could not be found.\nAll settings were set to default.", true);
                 }
 
-                ModActive = Settings.GetValue("GLOBAL_VARS", "ENABLE_ON_GAME_LOAD", false);
+                if (!isReloadingConfigs)
+                {
+                    ModActive = Settings.GetValue("GLOBAL_VARS", "ENABLE_ON_GAME_LOAD", false);
 
-                InputModule.InitControlKeysFromConfig(Settings);
+                    InputModule.InitControlKeysFromConfig(Settings); 
+                }
+
+
                 PedModule.ReadPedParamsFromConfig(Settings);
             }
             catch (Exception e)

@@ -70,6 +70,7 @@
     <Compile Include="PedUtil.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Core.cs" />
+    <Compile Include="RoguePed.cs" />
     <Compile Include="TriggerCondition.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="VehicleUtil.cs" />

@@ -10,25 +10,73 @@ namespace VRoguePed
 {
     internal class PedUtil
     {
-        public static List<Ped> GetNearestValidPeds(Entity target, int pedCount)
+        public static List<Ped> GetNearestValidRoguePeds(Ped target, int pedCount, float maxRadius = 40f, List<RoguePed> ignoreList = null)
         {
             var nearestPeds = new List<Ped>();
 
             if (target != null && target.Exists())
             {
-                var worldPeds = World.GetAllPeds().ToList();
-                var sortedPedsByDistance = worldPeds.
-                    Where(ped => ped != null
+                var sortedPedsByDistance = World.GetNearbyPeds(target, maxRadius).
+                    Where(ped => (ped != null
                         && ped.Exists()
                         && !ped.IsRagdoll
                         && ped.IsAlive
                         && ped.IsHuman
-                        && ped.IsOnFoot
-                        && ped != Game.Player.Character).
-                    OrderBy(ped => Vector3.Distance(ped.Position, target.Position)).
+                        && (ped.IsOnFoot || (ped.IsInVehicle() && !ped.IsInFlyingVehicle))
+                        && ped != Game.Player.Character)
+                        && !(ignoreList != null && ignoreList.Where(rp => rp.IsValid() && rp.Ped == ped).Count() != 0)).
+                    OrderBy(ped => Math.Abs(ped.Position.DistanceTo(Game.Player.Character.Position))).
                     Take(pedCount);
 
-                nearestPeds.AddRange(sortedPedsByDistance); 
+                nearestPeds.AddRange(sortedPedsByDistance);
+            }
+
+            return nearestPeds;
+        }
+
+        public static List<Ped> GetNearestValidRoguePeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
+        {
+            var nearestPeds = new List<Ped>();
+
+            if (target != null && target.Exists())
+            {
+                var sortedPedsByDistance = World.GetNearbyPeds(target, maxRadius).
+                    Where(ped => (ped != null
+                        && ped.Exists()
+                        && !ped.IsRagdoll
+                        && ped.IsAlive
+                        && ped.IsHuman
+                        && (ped.IsOnFoot || (ped.IsInVehicle() && !ped.IsInFlyingVehicle))
+                        && ped != Game.Player.Character)
+                        && !(ignoreList != null && ignoreList.Contains(ped))).
+                    OrderBy(ped => Math.Abs(ped.Position.DistanceTo(Game.Player.Character.Position))).
+                    Take(pedCount);
+
+                nearestPeds.AddRange(sortedPedsByDistance);
+            }
+
+            return nearestPeds;
+        }
+
+        public static List<Ped> GetNearestValidVictimPeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
+        {
+            var nearestPeds = new List<Ped>();
+
+            if (target != null && target.Exists())
+            {
+                var sortedPedsByDistance = World.GetNearbyPeds(target, maxRadius).
+                    Where(ped => (ped != null
+                        && ped.Exists()
+                        && !ped.IsRagdoll
+                        && ped.IsAlive
+                        && ped.IsHuman
+                        && (ped.IsOnFoot || (ped.IsInVehicle() && !ped.IsInFlyingVehicle && ped.CurrentVehicle != Game.Player.Character.CurrentVehicle))
+                        && ped != Game.Player.Character)
+                        && !(ignoreList != null && ignoreList.Contains(ped))).
+                    OrderBy(ped => Math.Abs(ped.Position.DistanceTo(Game.Player.Character.Position))).
+                    Take(pedCount);
+
+                nearestPeds.AddRange(sortedPedsByDistance);
             }
 
             return nearestPeds;

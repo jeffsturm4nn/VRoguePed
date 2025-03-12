@@ -34,7 +34,7 @@ namespace VRoguePed
 
         private void InitializeScript()
         {
-            Core.ProcessConfigFile();
+            Core.ProcessConfigFile(false);
         }
 
         private void OnTick(object sender, EventArgs e)
@@ -47,6 +47,8 @@ namespace VRoguePed
 
             InputModule.CheckForKeysHeldDown();
             InputModule.CheckForKeysReleased();
+
+            PedModule.ProcessPeds();
         }
 
         public void OnKeyDown(object sender, KeyEventArgs e)

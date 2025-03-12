@@ -9,7 +9,7 @@ namespace VRoguePed
 {
     internal class Constants
     {
-        public const int UPDATE_INTERVAL = 16;
+        public const int UPDATE_INTERVAL = 13;
         public static readonly string CONFIG_FILE_PATH = (Directory.GetCurrentDirectory() + "\\scripts\\VRoguePed.ini");
     }
 }
