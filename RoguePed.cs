@@ -13,8 +13,8 @@ namespace VRoguePed
         public RoguePed(Ped ped, VehicleSeat playerVehicleSeat = VehicleSeat.None)
         {
             Ped = ped;
-            Victims = new List<Ped>();
             PlayerVehicleSeat = playerVehicleSeat;
+            State = RogueState.LOOKING_FOR_VICTIM;
 
             if (Ped == null)
             {
@@ -22,13 +22,14 @@ namespace VRoguePed
             }
         }
 
-        public RoguePed(Ped ped, List<Ped> victims, VehicleSeat playerVehicleSeat = VehicleSeat.None)
+        public RoguePed(Ped ped, Ped victim, VehicleSeat playerVehicleSeat = VehicleSeat.None)
         {
             Ped = ped;
-            Victims = victims;
+            Victim = victim;
             PlayerVehicleSeat = playerVehicleSeat;
+            State = RogueState.LOOKING_FOR_VICTIM;
 
-            if(Ped == null)
+            if (Ped == null)
             {
                 throw new NullReferenceException("NULL Ped reference.");
             }
@@ -37,11 +38,28 @@ namespace VRoguePed
         public Ped Ped { get; set; }
         public VehicleSeat PlayerVehicleSeat { get; set; }
 
-        public List<Ped> Victims { get; set; }
+        public Ped Victim { get; set; }
+
+        public RogueState State { get; set; }
 
         public bool IsValid()
         {
             return (Ped != null && Ped.Exists() && !Ped.IsDead);
+        }
+
+        public bool HasValidVictim()
+        {
+            return (Util.IsValid(Victim) && Victim.IsAlive);
+        }
+
+        public float DistanceFromVictim()
+        {
+            if(IsValid() && HasValidVictim())
+            {
+                return (Ped.Position.DistanceTo(Victim.Position));
+            }
+
+            return float.MaxValue - 1;
         }
 
         //public static bool operator == (RoguePed p1, RoguePed p2)
@@ -57,7 +75,7 @@ namespace VRoguePed
         public override string ToString()
         {
             return "RoguePed{Ped=" + (Ped != null ? Ped.ToString() : "null") +
-                ", Victims=" + (Victims != null ? Victims.ToString() : "null") +
+                ", Victims=" + (Victim != null ? Victim.ToString() : "null") +
                 ", PlayerVehicleSeat=" + Enum.GetName(typeof(VehicleSeat), PlayerVehicleSeat) ;
         }
     }

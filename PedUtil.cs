@@ -10,7 +10,15 @@ namespace VRoguePed
 {
     internal class PedUtil
     {
-        public static List<Ped> GetNearestValidRoguePeds(Ped target, int pedCount, float maxRadius = 40f, List<RoguePed> ignoreList = null)
+        public static void PerformRunning(Ped ped)
+        {
+            TaskSequence taskSequence = new TaskSequence();
+            taskSequence.Close();
+            ped.Task.PerformSequence(taskSequence);
+            taskSequence.Dispose();
+        }
+
+        public static List<Ped> GetNearestValidRoguePeds2(Ped target, int pedCount, float maxRadius = 40f, List<RoguePed> ignoreList = null)
         {
             var nearestPeds = new List<Ped>();
 
@@ -67,7 +75,7 @@ namespace VRoguePed
                 var sortedPedsByDistance = World.GetNearbyPeds(target, maxRadius).
                     Where(ped => (ped != null
                         && ped.Exists()
-                        && !ped.IsRagdoll
+                        && ped != target
                         && ped.IsAlive
                         && ped.IsHuman
                         && (ped.IsOnFoot || (ped.IsInVehicle() && !ped.IsInFlyingVehicle && ped.CurrentVehicle != Game.Player.Character.CurrentVehicle))

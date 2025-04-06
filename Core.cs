@@ -13,6 +13,7 @@ namespace VRoguePed
     internal class Core
     {
         public static bool ModActive = false;
+        public static bool KeepRoguePeds = false;
         public static List<RoguePed> RoguePeds = new List<RoguePed>();
         public static List<Ped> VictimPeds = new List<Ped>();
         public static List<Ped> ProcessedPeds = new List<Ped>();
@@ -54,6 +55,8 @@ namespace VRoguePed
                     ModActive = Settings.GetValue("GLOBAL_VARS", "ENABLE_ON_GAME_LOAD", false);
 
                     InputModule.InitControlKeysFromConfig(Settings); 
+                    InputModule.SortKeyTuples();
+                    
                 }
 
 

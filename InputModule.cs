@@ -6,6 +6,7 @@ using GTA;
 
 using static VRoguePed.Core;
 using static VRoguePed.PedModule;
+using static VRoguePed.TestModule;
 
 /*
  * 
@@ -17,6 +18,22 @@ namespace VRoguePed
 {
     public static class InputModule
     {
+        public static void SortKeyTuples()
+        {
+            for (int i = 0; i < ControlKeys.Count; i++)
+            {
+                for (int j = 0; j < ControlKeys.Count - 1; j++)
+                {
+                    if (ControlKeys[j].keys.Count < ControlKeys[j + 1].keys.Count)
+                    {
+                        var keyPair = ControlKeys[j];
+
+                        ControlKeys[j] = ControlKeys[j + 1];
+                        ControlKeys[j + 1] = keyPair;
+                    }
+                }
+            }
+        }
 
         public static void InitControlKeysFromConfig(ScriptSettings settings)
         {
@@ -27,7 +44,13 @@ namespace VRoguePed
                 (Action)ReloadConfigFileProc, TriggerCondition.PRESSED);
             
             RegisterControlKey("MakePedGoRogueKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakePedGoRogueKey", "None"),
-                (Action)MakePedGoRogueProc, TriggerCondition.PRESSED);
+                (Action)delegate { MakePedGoRogueProc(true); }, TriggerCondition.PRESSED);
+
+            RegisterControlKey("MakeTargetedPedGoRogueKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakeTargetedPedGoRogueKey", "None"),
+                (Action)delegate { MakePedGoRogueProc(false); }, TriggerCondition.PRESSED);
+
+            RegisterControlKey("MakePedPerformActionKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakePedPerformActionKey", "None"),
+                (Action)delegate { MakePedPerformActionProc(); }, TriggerCondition.PRESSED);
 
             //RegisterControlKey("ToggleDebugInfoKey", Settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
             //(Action)delegate { DebugMode = !DebugMode; }, TriggerCondition.PRESSED, true);
