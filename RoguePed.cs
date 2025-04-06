@@ -59,7 +59,17 @@ namespace VRoguePed
                 return (Ped.Position.DistanceTo(Victim.Position));
             }
 
-            return float.MaxValue - 1;
+            return -1.0f;
+        }
+
+        public float DistanceFromPlayer()
+        {
+            if (IsValid())
+            {
+                return (Ped.Position.DistanceTo(Game.Player.Character.Position));
+            }
+
+            return -1.0f;
         }
 
         //public static bool operator == (RoguePed p1, RoguePed p2)
