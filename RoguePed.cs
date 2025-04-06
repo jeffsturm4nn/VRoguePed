@@ -44,7 +44,7 @@ namespace VRoguePed
 
         public bool IsValid()
         {
-            return (Ped != null && Ped.Exists() && !Ped.IsDead);
+            return (Ped != null && Ped.Exists() && Ped.IsAlive);
         }
 
         public bool HasValidVictim()

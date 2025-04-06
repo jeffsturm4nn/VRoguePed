@@ -10,9 +10,10 @@ namespace VRoguePed
 {
     internal class PedUtil
     {
-        public static void PerformRunning(Ped ped)
+        public static void PerformTaskSequence(Ped ped, Action<TaskSequence> taskAction)
         {
             TaskSequence taskSequence = new TaskSequence();
+            taskAction(taskSequence);
             taskSequence.Close();
             ped.Task.PerformSequence(taskSequence);
             taskSequence.Dispose();
