@@ -44,10 +44,10 @@ namespace VRoguePed
                 (Action)ReloadConfigFileProc, TriggerCondition.PRESSED);
             
             RegisterControlKey("MakePedGoRogueKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakePedGoRogueKey", "None"),
-                (Action)delegate { MakePedGoRogueProc(true); }, TriggerCondition.PRESSED);
+                (Action)delegate { MakePedGoRogueProc(false, false); }, TriggerCondition.PRESSED);
 
             RegisterControlKey("MakeTargetedPedGoRogueKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakeTargetedPedGoRogueKey", "None"),
-                (Action)delegate { MakePedGoRogueProc(false); }, TriggerCondition.PRESSED);
+                (Action)delegate { MakePedGoRogueProc(false, true); }, TriggerCondition.PRESSED);
 
             RegisterControlKey("MakePedPerformActionKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakePedPerformActionKey", "None"),
                 (Action)delegate { MakePedPerformActionProc(); }, TriggerCondition.PRESSED);

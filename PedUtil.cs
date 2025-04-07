@@ -120,9 +120,11 @@ namespace VRoguePed
                 {
                     Ped = p,
                     Distance = p.Position.DistanceTo(Game.Player.Character.Position),
-                    IsCop = IsCop(p)
+                    IsCop = IsCop(p),
+                    IsAttackingTarget = p.IsInCombatAgainst(target)
                 })
                 .OrderBy(p => p.IsCop ? 0 : 1) // cops first
+                .OrderBy(p => p.IsAttackingTarget ? 0 : 1) // attackers first
                 .ThenBy(p => p.Distance)       // closest to farthest
                 .Select(p => p.Ped)
                 .Take(pedCount);
@@ -138,5 +140,10 @@ namespace VRoguePed
             string modelName = ped.Model.ToString().ToLower();
             return modelName.Contains("cop") || modelName.Contains("sheriff") || modelName.Contains("csb_cop");
         }
+
+        //private static bool IsAttackingPed(Ped ped, Ped target)
+        //{
+        //    return (ped.IsShooting || ped.IsInCombatAgainst(target))
+        //}
     }
 }
