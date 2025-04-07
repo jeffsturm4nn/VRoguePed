@@ -14,5 +14,7 @@ namespace VRoguePed
 
         public static readonly int TASK_SEQUENCE_COMPLETED = -1;
         public static readonly int TASK_SEQUENCE_IN_PROGRESS = 0;
+
+        public static readonly int TASK_HASH_WANDERING_AROUND = 222;
     }
 }

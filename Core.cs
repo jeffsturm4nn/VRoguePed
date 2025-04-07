@@ -59,7 +59,6 @@ namespace VRoguePed
                     
                 }
 
-
                 PedModule.ReadPedParamsFromConfig(Settings);
             }
             catch (Exception e)
