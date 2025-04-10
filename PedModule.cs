@@ -19,15 +19,16 @@ namespace VRoguePed
         private static readonly Vector3 FranklingHouse1Position = new Vector3(-14f, -1458f, 30f);
 
         private static int FriendlyRoguePedsGroupHash = -1;
-        private static Timer Timer = new Timer(900);
+        private static Timer Timer = new Timer(800);
         private static volatile bool HasReachedInterval = false;
 
         private static WeaponHash RoguePedWeaponHash = WeaponHash.Pistol50;
         private static int RoguePedHealth = 500;
         private static float MaxRoguePedRecruitDistance = 40f;
-        private static float MaxVictimPedSearchDistance = 37f;
-        private static float MaxRoguePedDistanceFromPlayer = 70f;
-        private static float MinVictimPedDistanceToShoot = 17f;
+        private static float MaxVictimPedSearchDistance = 40f;
+        private static float MaxRoguePedDistanceFromPlayer = 100f;
+        private static float MinVictimPedDistanceToShoot = 19f;
+        private static float MaxRoguePedDistanceBeforeDisband = 120f;
 
         private static void OnTimeElapsed(Object source, ElapsedEventArgs e)
         {
@@ -62,16 +63,19 @@ namespace VRoguePed
                     if (roguePed != null)
                     {
                         if (!roguePed.IsValid() ||
-                            roguePed.Ped.Position.DistanceTo(Game.Player.Character.Position) > 100f)
+                            roguePed.Ped.Position.DistanceTo(Game.Player.Character.Position) > MaxRoguePedDistanceBeforeDisband)
                         {
                             Core.RoguePeds.Remove(roguePed);
                             Core.ProcessedPeds.Remove(roguePed.Ped);
                             Core.ProcessedPeds.Remove(roguePed.Victim);
+
+                            PedUtil.DeletePedBlip(roguePed.Blip);
+                            PedUtil.DisposePed(roguePed.Ped);
                         }
                         else if (roguePed.State != RogueState.RUNNING_TOWARDS_PLAYER)
                         {
                             if (!Util.IsValid(roguePed.Victim) ||
-                                (roguePed.Victim.IsDead || roguePed.DistanceFromVictim() > 35f))
+                                (roguePed.Victim.IsDead || roguePed.DistanceFromVictim() > MaxVictimPedSearchDistance))
                             {
                                 Core.ProcessedPeds.Remove(roguePed.Victim);
 
@@ -116,7 +120,8 @@ namespace VRoguePed
                         {
                             continue;
                         }
-                        else if (roguePed.State == RogueState.LOOKING_FOR_VICTIM)
+                        else
+                        if (roguePed.State == RogueState.LOOKING_FOR_VICTIM)
                         {
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
@@ -219,7 +224,7 @@ namespace VRoguePed
                     }
                 }
 
-                //UI.ShowSubtitle(sub);
+                UI.ShowSubtitle(sub);
             }
             catch (Exception e)
             {
@@ -292,7 +297,7 @@ namespace VRoguePed
                 }
                 else
                 {
-                    victimPed = PedUtil.GetNearestValidVictimPeds(roguePed, 1, 35f, Core.ProcessedPeds).FirstOrDefault();
+                    victimPed = PedUtil.GetNearestValidVictimPeds(roguePed, 1, MaxVictimPedSearchDistance, Core.ProcessedPeds).FirstOrDefault();
                 }
 
                 if (victimPed == roguePed)
@@ -301,6 +306,7 @@ namespace VRoguePed
                     return;
                 }
 
+                //roguePed.IsPersistent = true;
                 roguePed.Weapons.Give(RoguePedWeaponHash, 9999, true, true);
                 roguePed.MaxHealth = RoguePedHealth;
                 roguePed.Health = RoguePedHealth;
@@ -308,7 +314,14 @@ namespace VRoguePed
                 roguePed.CanSufferCriticalHits = false;
                 roguePed.CanWrithe = false;
                 roguePed.MaxSpeed = 100f;
-                roguePed.WetnessHeight = 100;
+                roguePed.WetnessHeight = 100f;
+                roguePed.AlwaysKeepTask = true;
+                roguePed.BlockPermanentEvents = true;
+                roguePed.FiringPattern = FiringPattern.FullAuto;
+                roguePed.CanSwitchWeapons = false;
+
+                PedUtil.PreventPedFromFleeing(roguePed);
+                PedUtil.MakePedCombatResilient(roguePed);
 
                 VehicleSeat playerVehicleSeat = VehicleSeat.None;
 
@@ -329,7 +342,8 @@ namespace VRoguePed
 
                 if (currentRoguePed == null || !currentRoguePed.IsValid())
                 {
-                    Core.RoguePeds.Add(new RoguePed(roguePed, victimPed, playerVehicleSeat));
+                    Blip blip = PedUtil.AttachBlipToPed(roguePed, BlipColor.BlueLight, (Core.RoguePeds.Count+1));
+                    Core.RoguePeds.Add(new RoguePed(roguePed, victimPed, playerVehicleSeat, blip));
                     Core.ProcessedPeds.Add(roguePed);
                     AddPedToFriendlyGroup(roguePed);
                 }

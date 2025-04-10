@@ -19,6 +19,48 @@ namespace VRoguePed
             return Function.Call<bool>(Hash.GET_IS_TASK_ACTIVE, ped, TASK_HASH_WANDERING_AROUND);
         }
 
+        public static void PreventPedFromFleeing(Ped ped)
+        {
+            Function.Call(Hash.SET_PED_FLEE_ATTRIBUTES, ped.Handle, 0, true);
+        }
+
+        public static void DisposePed(Ped ped)
+        {
+            if(ped != null && ped.Exists())
+            {
+                ped.IsPersistent = false;
+                ped.MarkAsNoLongerNeeded();
+            }
+        }
+
+        public static void MakePedCombatResilient(Ped ped)
+        {
+            Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 2, true);
+            Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 5, true);
+            Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 13, true);
+            Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 58, true);
+
+            Function.Call(Hash.SET_PED_DESIRED_MOVE_BLEND_RATIO, ped.Handle, 3.0f);
+            Function.Call(Hash.SET_PED_MOVE_RATE_OVERRIDE, ped.Handle, 5.0f);
+        }
+
+        public static Blip AttachBlipToPed(Ped ped, BlipColor blipColor, int number)
+        {
+            Blip blip = ped.AddBlip();
+            blip.Color = blipColor;
+            blip.ShowNumber(number);
+
+            return blip;
+        }
+
+        public static void DeletePedBlip(Blip blip)
+        {
+            if(blip != null && blip.Exists())
+            {
+                blip.Remove();
+            }
+        }
+
         public static void PerformTaskSequence(Ped ped, Action<TaskSequence> taskAction)
         {
             TaskSequence taskSequence = new TaskSequence();
@@ -119,12 +161,14 @@ namespace VRoguePed
                 .Select(p => new
                 {
                     Ped = p,
-                    Distance = p.Position.DistanceTo(Game.Player.Character.Position),
+                    Distance = p.Position.DistanceTo(target.Position),
                     IsCop = IsCop(p),
-                    IsAttackingTarget = p.IsInCombatAgainst(target)
+                    IsAttackingTarget = p.IsInCombatAgainst(target),
+                    IsAttackingPlayer = p.IsInCombatAgainst(Game.Player.Character)
                 })
                 .OrderBy(p => p.IsCop ? 0 : 1) // cops first
                 .OrderBy(p => p.IsAttackingTarget ? 0 : 1) // attackers first
+                .OrderBy(p => p.IsAttackingPlayer ? 0 : 1) // attackers first
                 .ThenBy(p => p.Distance)       // closest to farthest
                 .Select(p => p.Ped)
                 .Take(pedCount);

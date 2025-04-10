@@ -10,11 +10,12 @@ namespace VRoguePed
 {
     internal class RoguePed
     {
-        public RoguePed(Ped ped, VehicleSeat playerVehicleSeat = VehicleSeat.None)
+        public RoguePed(Ped ped, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null)
         {
             Ped = ped;
             PlayerVehicleSeat = playerVehicleSeat;
             State = RogueState.LOOKING_FOR_VICTIM;
+            Blip = blip;
 
             if (Ped == null)
             {
@@ -22,12 +23,13 @@ namespace VRoguePed
             }
         }
 
-        public RoguePed(Ped ped, Ped victim, VehicleSeat playerVehicleSeat = VehicleSeat.None)
+        public RoguePed(Ped ped, Ped victim, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null)
         {
             Ped = ped;
             Victim = victim;
             PlayerVehicleSeat = playerVehicleSeat;
             State = RogueState.LOOKING_FOR_VICTIM;
+            Blip = blip;
 
             if (Ped == null)
             {
@@ -42,6 +44,8 @@ namespace VRoguePed
 
         public RogueState State { get; set; }
 
+        public Blip Blip { get; set; }
+
         public bool IsValid()
         {
             return (Ped != null && Ped.Exists() && Ped.IsAlive);
@@ -50,6 +54,11 @@ namespace VRoguePed
         public bool HasValidVictim()
         {
             return (Util.IsValid(Victim) && Victim.IsAlive);
+        }
+
+        public bool HasBlip()
+        {
+            return Blip != null && Blip.Exists();
         }
 
         public float DistanceFromVictim()
