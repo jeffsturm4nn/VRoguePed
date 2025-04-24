@@ -150,6 +150,11 @@ namespace VRoguePed
             return (e != null && e.Exists());
         }
 
+        public static bool IsValid(VictimPed e)
+        {
+            return (e != null && IsValid(e.Ped));
+        }
+
         public static void DeleteEntity(Entity e)
         {
             if (e != null)
