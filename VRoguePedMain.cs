@@ -36,7 +36,6 @@ namespace VRoguePed
         {
             Core.ProcessConfigFile(false);
             PedModule.InitPedRelationshipGroups();
-            PedModule.InitGlobalTimer();
         }
 
         private void OnTick(object sender, EventArgs e)

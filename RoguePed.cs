@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Lifetime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,12 +11,13 @@ namespace VRoguePed
 {
     internal class RoguePed
     {
-        public RoguePed(Ped ped, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null)
+        public RoguePed(Ped ped, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null, int lifetimeInMs = 300*1000)
         {
             Ped = ped;
             PlayerVehicleSeat = playerVehicleSeat;
             State = RogueState.LOOKING_FOR_VICTIM;
             Blip = blip;
+            LifetimeInMs = lifetimeInMs;
 
             if (Ped == null)
             {
@@ -23,13 +25,14 @@ namespace VRoguePed
             }
         }
 
-        public RoguePed(Ped ped, VictimPed victim, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null)
+        public RoguePed(Ped ped, VictimPed victim, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null, int lifetimeInMs = 300 * 1000)
         {
             Ped = ped;
             Victim = victim;
             PlayerVehicleSeat = playerVehicleSeat;
             State = RogueState.LOOKING_FOR_VICTIM;
             Blip = blip;
+            LifetimeInMs = lifetimeInMs;
 
             if (Ped == null)
             {
@@ -45,6 +48,8 @@ namespace VRoguePed
         public RogueState State { get; set; }
 
         public Blip Blip { get; set; }
+
+        public int LifetimeInMs { get; set; }
 
         public bool IsValid()
         {

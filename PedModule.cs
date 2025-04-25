@@ -19,32 +19,23 @@ namespace VRoguePed
         private static readonly Vector3 FranklingHouse1Position = new Vector3(-14f, -1458f, 30f);
 
         private static int FriendlyRoguePedsGroupHash = -1;
-        private static Timer Timer = new Timer(800);
-        private static volatile bool HasReachedInterval = false;
+        private static volatile bool hasReachedInterval = false;
+        private static int timeCounter = 0;
 
-        private static WeaponHash RoguePedWeaponHash = WeaponHash.Pistol50;
-        private static int RoguePedHealth = 500;
-        private static float MaxRoguePedRecruitDistance = 40f;
-        private static float MaxVictimPedSearchDistance = 40f;
-        private static float MaxRoguePedDistanceFromPlayer = 60f;
-        private static float MinVictimPedDistanceToShoot = 19f;
-        private static float MaxRoguePedDistanceBeforeDisband = 80f;
+        public static WeaponHash RoguePedWeaponHash = WeaponHash.Pistol50;
+        public static int RoguePedHealth = 500;
+        public static int RoguePedLifetimeInSeconds = 300;
+        public static float MaxRoguePedRecruitDistance = 40f;
+        public static float MaxVictimPedSearchDistance = 40f;
+        public static float MaxRoguePedDistanceFromPlayer = 60f;
+        public static float MinVictimPedDistanceToShoot = 19f;
+        public static float MaxRoguePedWanderDistance = 30f;
+        public static float MaxRoguePedDistanceBeforeDisband = 80f;
 
-        private static void OnTimeElapsed(Object source, ElapsedEventArgs e)
-        {
-            HasReachedInterval = true;
-        }
         public static void InitPedRelationshipGroups()
         {
             FriendlyRoguePedsGroupHash = World.AddRelationshipGroup("FriendlyRoguePeds");
             World.SetRelationshipBetweenGroups(Relationship.Respect, FriendlyRoguePedsGroupHash, Game.Player.Character.RelationshipGroup);
-        }
-
-        public static void InitGlobalTimer()
-        {
-            Timer.AutoReset = true;
-            Timer.Enabled = true;
-            Timer.Elapsed += OnTimeElapsed;
         }
 
         public static void AddPedToFriendlyGroup(Ped ped)
@@ -119,6 +110,15 @@ namespace VRoguePed
         {
             try
             {
+                const int timeInterval = 100 / Constants.UPDATE_INTERVAL;
+                bool hasReachedInterval = false;
+
+                if(++timeCounter >= timeInterval)
+                {
+                    timeCounter = 0;
+                    hasReachedInterval = true;
+                }
+
                 string sub = "RoguePeds.Count = " + Core.RoguePeds.Count;
                 sub += "\nProcessedPeds.Count = " + Core.ProcessedPeds.Count;
 
@@ -139,14 +139,13 @@ namespace VRoguePed
                         {
                             continue;
                         }
-                        else
-                        if (roguePed.State == RogueState.LOOKING_FOR_VICTIM)
+                        else if (roguePed.State == RogueState.LOOKING_FOR_VICTIM)
                         {
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
                                 roguePed.State = RogueState.RUNNING_TOWARDS_PLAYER;
                             }
-                            else if (HasReachedInterval)
+                            else if (hasReachedInterval)
                             {
                                 if (Util.IsValid(roguePed.Victim))
                                 {
@@ -164,12 +163,10 @@ namespace VRoguePed
                                 else if (!PedUtil.IsPedWanderingAround(roguePed.Ped))
                                 //else if (!roguePed.Ped.IsWalking)
                                 {
-                                    roguePed.Ped.Task.WanderAround(Game.Player.Character.Position, (MaxRoguePedDistanceFromPlayer));
+                                    roguePed.Ped.Task.WanderAround(Game.Player.Character.Position, MaxRoguePedWanderDistance);
                                 }
 
                                 roguePed.Ped.WetnessHeight = 2f;
-
-                                HasReachedInterval = false;
                             }
                         }
                         else if (roguePed.State == RogueState.RUNNING_TOWARDS_VICTIM)
@@ -182,12 +179,14 @@ namespace VRoguePed
                             {
                                 if (roguePed.DistanceFromVictim() <= MinVictimPedDistanceToShoot)
                                 {
-                                    roguePed.State = RogueState.SHOOTING_AT_VICTIM;
+                                    roguePed.State = RogueState.ATTACKING_VICTIM;
                                 }
-                                else if (HasReachedInterval)
+                                else if (hasReachedInterval)
                                 {
-                                    roguePed.Ped.Task.RunTo(roguePed.Victim.Ped.Position, false);
-                                    HasReachedInterval = false;
+                                    if (!roguePed.Ped.IsRunning)
+                                    {
+                                        roguePed.Ped.Task.RunTo(roguePed.Victim.Ped.Position, false); 
+                                    }
                                 }
                             }
                             else
@@ -195,7 +194,7 @@ namespace VRoguePed
                                 roguePed.State = RogueState.LOOKING_FOR_VICTIM;
                             }
                         }
-                        else if (roguePed.State == RogueState.SHOOTING_AT_VICTIM)
+                        else if (roguePed.State == RogueState.ATTACKING_VICTIM)
                         {
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
@@ -205,7 +204,7 @@ namespace VRoguePed
                             {
                                 if (roguePed.DistanceFromVictim() <= MinVictimPedDistanceToShoot)
                                 {
-                                    if (HasReachedInterval)
+                                    if (hasReachedInterval)
                                     {
                                         if (!roguePed.Victim.Ped.IsInVehicle())
                                         {
@@ -218,8 +217,6 @@ namespace VRoguePed
                                         {
                                             roguePed.Ped.Task.ShootAt(roguePed.Victim.Ped, 5000, FiringPattern.FullAuto);
                                         }
-
-                                        HasReachedInterval = false;
                                     }
                                 }
                                 else
@@ -236,11 +233,9 @@ namespace VRoguePed
                         {
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
-                                if (HasReachedInterval)
+                                if (hasReachedInterval)
                                 {
-                                    //PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.RunTo(Game.Player.Character.Position, false, 6000); });
                                     roguePed.Ped.Task.RunTo(Game.Player.Character.Position, false);
-                                    HasReachedInterval = false;
                                 }
                             }
                             else
@@ -251,7 +246,7 @@ namespace VRoguePed
                     }
                 }
 
-                UI.ShowSubtitle(sub);
+                //UI.ShowSubtitle(sub);
             }
             catch (Exception e)
             {
@@ -320,20 +315,7 @@ namespace VRoguePed
                     }
                 }
 
-                roguePed.Weapons.Give(RoguePedWeaponHash, 9999, true, true);
-                roguePed.MaxHealth = RoguePedHealth;
-                roguePed.Health = RoguePedHealth;
-                roguePed.CanRagdoll = false;
-                roguePed.CanSufferCriticalHits = false;
-                roguePed.CanWrithe = false;
-                roguePed.MaxSpeed = 100f;
-                roguePed.WetnessHeight = 1f;
-                roguePed.AlwaysKeepTask = true;
-                roguePed.BlockPermanentEvents = true;
-                roguePed.FiringPattern = FiringPattern.FullAuto;
-                roguePed.CanSwitchWeapons = false;
-
-                PedUtil.PreventPedFromFleeing(roguePed);
+                PedUtil.SetRoguePedParameters(roguePed);
                 PedUtil.MakePedCombatResilient(roguePed);
 
                 VehicleSeat playerVehicleSeat = VehicleSeat.None;
@@ -356,7 +338,7 @@ namespace VRoguePed
                 if (currentRoguePed == null || !currentRoguePed.IsValid())
                 {
                     Blip blip = PedUtil.AttachBlipToPed(roguePed, BlipColor.BlueLight, (Core.RoguePeds.Count + 1));
-                    Core.RoguePeds.Add(new RoguePed(roguePed, victimPed, playerVehicleSeat, blip));
+                    Core.RoguePeds.Add(new RoguePed(roguePed, victimPed, playerVehicleSeat, blip, RoguePedLifetimeInSeconds * 1000));
                     Core.ProcessedPeds.Add(roguePed);
                     AddPedToFriendlyGroup(roguePed);
                 }
@@ -396,12 +378,13 @@ namespace VRoguePed
                 MaxVictimPedSearchDistance = settings.GetValue<int>("PED_PARAMETERS", "MaxVictimPedSearchDistance", 40);
                 MaxRoguePedDistanceFromPlayer = settings.GetValue<int>("PED_PARAMETERS", "MaxRoguePedDistanceFromPlayer", 60);
                 MinVictimPedDistanceToShoot = settings.GetValue<int>("PED_PARAMETERS", "MinVictimPedDistanceToShoot", 19);
+                MaxRoguePedWanderDistance = settings.GetValue<int>("PED_PARAMETERS", "MaxRoguePedWanderDistance", 30);
                 MaxRoguePedDistanceBeforeDisband = settings.GetValue<int>("PED_PARAMETERS", "MaxRoguePedDistanceBeforeDisband", 80);
+                RoguePedLifetimeInSeconds = settings.GetValue<int>("PED_PARAMETERS", "RoguePedLifetimeInSeconds", 300);
             }
             catch (Exception e)
             {
                 Util.Notify("VRoguePed ReadPedParamsFromConfig() Error:\n " + e.ToString());
-                RoguePedWeaponHash = WeaponHash.Pistol50;
             }
         }
     }

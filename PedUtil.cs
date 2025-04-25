@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using static VRoguePed.Constants;
+using static VRoguePed.PedModule;
 
 namespace VRoguePed
 {
@@ -19,14 +20,9 @@ namespace VRoguePed
             return Function.Call<bool>(Hash.GET_IS_TASK_ACTIVE, ped, TASK_HASH_WANDERING_AROUND);
         }
 
-        public static void PreventPedFromFleeing(Ped ped)
-        {
-            Function.Call(Hash.SET_PED_FLEE_ATTRIBUTES, ped.Handle, 0, true);
-        }
-
         public static void DisposePed(Ped ped)
         {
-            if(ped != null && ped.Exists())
+            if (ped != null && ped.Exists())
             {
                 ped.IsPersistent = false;
                 ped.MarkAsNoLongerNeeded();
@@ -50,6 +46,22 @@ namespace VRoguePed
             Function.Call(Hash.SET_PED_COMBAT_ABILITY, ped.Handle, 100);
         }
 
+        public static void SetRoguePedParameters(Ped roguePed)
+        {
+            roguePed.Weapons.Give(RoguePedWeaponHash, 9999, true, true);
+            roguePed.MaxHealth = RoguePedHealth;
+            roguePed.Health = RoguePedHealth;
+            roguePed.CanRagdoll = false;
+            roguePed.CanSufferCriticalHits = false;
+            roguePed.CanWrithe = false;
+            roguePed.MaxSpeed = 100f;
+            roguePed.WetnessHeight = 1f;
+            roguePed.AlwaysKeepTask = true;
+            roguePed.BlockPermanentEvents = true;
+            roguePed.FiringPattern = FiringPattern.FullAuto;
+            roguePed.CanSwitchWeapons = false;
+        }
+
         public static Blip AttachBlipToPed(Ped ped, BlipColor blipColor, int number)
         {
             Blip blip = ped.AddBlip();
@@ -61,7 +73,7 @@ namespace VRoguePed
 
         public static void DeletePedBlip(Blip blip)
         {
-            if(blip != null && blip.Exists())
+            if (blip != null && blip.Exists())
             {
                 blip.Remove();
             }
@@ -74,30 +86,6 @@ namespace VRoguePed
             taskSequence.Close();
             ped.Task.PerformSequence(taskSequence);
             taskSequence.Dispose();
-        }
-
-        public static List<Ped> GetNearestValidRoguePeds2(Ped target, int pedCount, float maxRadius = 40f, List<RoguePed> ignoreList = null)
-        {
-            var nearestPeds = new List<Ped>();
-
-            if (target != null && target.Exists())
-            {
-                var sortedPedsByDistance = World.GetNearbyPeds(target, maxRadius).
-                    Where(ped => (ped != null
-                        && ped.Exists()
-                        && !ped.IsRagdoll
-                        && ped.IsAlive
-                        && ped.IsHuman
-                        && (ped.IsOnFoot || (ped.IsInVehicle() && !ped.IsInFlyingVehicle))
-                        && ped != Game.Player.Character)
-                        && !(ignoreList != null && ignoreList.Where(rp => rp.IsValid() && rp.Ped == ped).Count() != 0)).
-                    OrderBy(ped => Math.Abs(ped.Position.DistanceTo(Game.Player.Character.Position))).
-                    Take(pedCount);
-
-                nearestPeds.AddRange(sortedPedsByDistance);
-            }
-
-            return nearestPeds;
         }
 
         public static List<Ped> GetNearestValidRoguePeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
@@ -117,67 +105,6 @@ namespace VRoguePed
                         && !(ignoreList != null && ignoreList.Contains(ped))).
                     OrderBy(ped => Math.Abs(ped.Position.DistanceTo(Game.Player.Character.Position))).
                     Take(pedCount);
-
-                nearestPeds.AddRange(sortedPedsByDistance);
-            }
-
-            return nearestPeds;
-        }
-
-        public static List<Ped> GetNearestValidVictimPeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
-        {
-            var nearestPeds = new List<Ped>();
-
-            if (target != null && target.Exists())
-            {
-                var sortedPedsByDistance = World.GetNearbyPeds(target, maxRadius).
-                    Where(ped => (ped != null
-                        && ped.Exists()
-                        && ped != target
-                        && ped.IsAlive
-                        && ped.IsHuman
-                        && (ped.IsOnFoot || (ped.IsInVehicle() && !ped.IsInFlyingVehicle && ped.CurrentVehicle != Game.Player.Character.CurrentVehicle))
-                        && ped != Game.Player.Character)
-                        && !(ignoreList != null && ignoreList.Contains(ped))).
-                    OrderBy(ped => Math.Abs(ped.Position.DistanceTo(Game.Player.Character.Position))).
-                    Take(pedCount);
-
-                nearestPeds.AddRange(sortedPedsByDistance);
-            }
-
-            return nearestPeds;
-        }
-
-        public static List<Ped> GetNearestPrioritizedValidVictimPeds2(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
-        {
-            var nearestPeds = new List<Ped>();
-
-            if (target != null && target.Exists())
-            {
-                var sortedPedsByDistance = World.GetNearbyPeds(target, maxRadius)
-                    .Where(ped =>
-                        ped != null &&
-                        ped.Exists() &&
-                        ped != target &&
-                        ped != Game.Player.Character &&
-                        ped.IsHuman &&
-                        !ped.IsDead &&
-                        (ped.IsOnFoot || (ped.IsInVehicle() && !ped.IsInFlyingVehicle && ped.CurrentVehicle != Game.Player.Character.CurrentVehicle)) &&
-                        !(ignoreList != null && ignoreList.Contains(ped)))
-                .Select(p => new
-                {
-                    Ped = p,
-                    Distance = p.Position.DistanceTo(target.Position),
-                    IsCop = IsCop(p),
-                    IsAttackingTarget = p.IsInCombatAgainst(target),
-                    IsAttackingPlayer = p.IsInCombatAgainst(Game.Player.Character)
-                })
-                .OrderBy(p => p.IsCop ? 0 : 1) // cops first
-                .OrderBy(p => p.IsAttackingTarget ? 0 : 1) // attackers first
-                .OrderBy(p => p.IsAttackingPlayer ? 0 : 1) // attackers first
-                .ThenBy(p => p.Distance)       // closest to farthest
-                .Select(p => p.Ped)
-                .Take(pedCount);
 
                 nearestPeds.AddRange(sortedPedsByDistance);
             }
@@ -208,9 +135,9 @@ namespace VRoguePed
                     IsCop = IsCop(p),
                     IsAttackingTarget = p.IsInCombatAgainst(target),
                 })
-                .OrderBy(p => p.IsCop ? 0 : 1) // cops first
-                .OrderBy(p => p.IsAttackingTarget ? 0 : 1) // attackers first
-                .ThenBy(p => p.Distance)       // closest to farthest
+                .OrderBy(p => p.IsCop ? 0 : 1)
+                .OrderBy(p => p.IsAttackingTarget ? 0 : 1)
+                .ThenBy(p => p.Distance)
                 .Select(p => new VictimPed(p.Ped, GetVictimPedType(p.Ped, target)))
                 .Take(pedCount);
 
@@ -249,7 +176,7 @@ namespace VRoguePed
         {
             var playerAttackers = GetPedAttackers(Game.Player.Character, pedCount, maxRadius, ignoreList, VictimType.PLAYER_ATTACKER);
 
-            if(playerAttackers.Count == 0)
+            if (playerAttackers.Count == 0)
             {
                 return GetNearestPrioritizedValidVictimPeds(target, pedCount, maxRadius, ignoreList);
             }
@@ -273,23 +200,62 @@ namespace VRoguePed
             }
         }
 
-        //public static List<VictimPed> GetNextVictimPeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
-        //{
-        //    List<VictimPed> victimPeds = new List<VictimPed>();
-        //    List<Ped> nearbyVictimPeds = GetNearestPrioritizedValidVictimPeds(target, pedCount, maxRadius, ignoreList);
-
-        //    foreach(Ped nearbyPed in nearbyVictimPeds)
-        //    {
-        //        victimPeds.Add(new VictimPed(nearbyPed, GetVictimPedType(nearbyPed, target)));
-        //    }
-
-        //    return victimPeds;
-        //}
-
         private static bool IsCop(Ped ped)
         {
             string modelName = ped.Model.ToString().ToLower();
             return modelName.Contains("cop") || modelName.Contains("sheriff") || modelName.Contains("csb_cop");
+        }
+
+        public static void ResetRoguePed(RoguePed roguePed)
+        {
+            int pedIndex = Core.ProcessedPeds.IndexOf(roguePed.Ped);
+            Ped originalPed = roguePed.Ped;
+            Ped clonedPed = ClonePed(originalPed);
+
+            if (clonedPed != null)
+            {
+                roguePed.LifetimeInMs = RoguePedLifetimeInSeconds * 1000;
+
+                Core.ProcessedPeds[pedIndex] = roguePed.Ped;
+                SetRoguePedParameters(roguePed.Ped);
+                originalPed.Delete();
+
+                roguePed.State = RogueState.LOOKING_FOR_VICTIM;
+            }
+        }
+
+        public static Ped ClonePed(Ped ped)
+        {
+            try
+            {
+                float pedHeading = ped.Heading;
+                Model pedModel = ped.Model;
+                Vector3 pedPosition = ped.Position;
+
+                Ped clonedPed = World.CreatePed(pedModel, pedPosition, pedHeading);
+
+                for (int i = 0; i < 12; i++)
+                {
+                    int drawable = Function.Call<int>(Hash.GET_PED_DRAWABLE_VARIATION, ped, i);
+                    int texture = Function.Call<int>(Hash.GET_PED_TEXTURE_VARIATION, ped, i);
+                    int palette = Function.Call<int>(Hash.GET_PED_PALETTE_VARIATION, ped, i);
+
+                    Function.Call(Hash.SET_PED_COMPONENT_VARIATION, clonedPed, i, drawable, texture, palette);
+                }
+
+                return clonedPed;
+            }
+            catch (Exception e)
+            {
+                Util.Notify("VRoguePed ClonePed() Error: " + e.Message);
+            }
+
+            return null;
+        }
+
+        public static void DeletePed(Ped ped)
+        {
+
         }
     }
 }
