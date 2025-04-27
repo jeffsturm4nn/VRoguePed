@@ -51,6 +51,12 @@ namespace VRoguePed
 
             RegisterControlKey("MakePedPerformActionKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakePedPerformActionKey", "None"),
                 (Action)delegate { MakePedPerformActionProc(); }, TriggerCondition.PRESSED);
+            
+            RegisterControlKey("KillAllRoguePedsKey", settings.GetValue<String>("CONTROL_KEYBOARD", "KillAllRoguePedsKey", "None"),
+                (Action)delegate { KillAllRoguePedsProc(); }, TriggerCondition.PRESSED);
+            
+            RegisterControlKey("MakeBatchPedsGoRogueKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MakeBatchPedsGoRogueKey", "None"),
+                (Action)delegate { MakeBatchPedsGoRogueProc(); }, TriggerCondition.PRESSED);
 
             //RegisterControlKey("ToggleDebugInfoKey", Settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
             //(Action)delegate { DebugMode = !DebugMode; }, TriggerCondition.PRESSED, true);

@@ -48,18 +48,20 @@ namespace VRoguePed
 
         public static void SetRoguePedParameters(Ped roguePed)
         {
-            roguePed.Weapons.Give(RoguePedWeaponHash, 9999, true, true);
+            roguePed.IsPersistent = true;
+            roguePed.Weapons.Give(WeaponHash.Hatchet, 1, false, true);
+            roguePed.Weapons.Give(RoguePedWeaponHash, 99999, true, true);
             roguePed.MaxHealth = RoguePedHealth;
             roguePed.Health = RoguePedHealth;
             roguePed.CanRagdoll = false;
             roguePed.CanSufferCriticalHits = false;
             roguePed.CanWrithe = false;
-            roguePed.MaxSpeed = 100f;
-            roguePed.WetnessHeight = 1f;
+            //roguePed.MaxSpeed = 100f;
+            roguePed.WetnessHeight = 2f;
             roguePed.AlwaysKeepTask = true;
             roguePed.BlockPermanentEvents = true;
             roguePed.FiringPattern = FiringPattern.FullAuto;
-            roguePed.CanSwitchWeapons = false;
+            roguePed.CanSwitchWeapons = true;
         }
 
         public static Blip AttachBlipToPed(Ped ped, BlipColor blipColor, int number)
@@ -114,11 +116,9 @@ namespace VRoguePed
 
         public static List<VictimPed> GetNearestPrioritizedValidVictimPeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
         {
-            var nearestPeds = new List<VictimPed>();
-
             if (target != null && target.Exists())
             {
-                var sortedPedsByDistance = World.GetNearbyPeds(target, maxRadius)
+                return World.GetNearbyPeds(target, maxRadius)
                     .Where(ped =>
                         ped != null &&
                         ped.Exists() &&
@@ -126,7 +126,8 @@ namespace VRoguePed
                         ped != Game.Player.Character &&
                         ped.IsHuman &&
                         !ped.IsDead &&
-                        (ped.IsOnFoot || (ped.IsInVehicle() && !ped.IsInFlyingVehicle && ped.CurrentVehicle != Game.Player.Character.CurrentVehicle)) &&
+                        ped.RelationshipGroup != FriendlyRoguePedsGroupHash &&
+                        (ped.IsOnFoot || (ped.IsInVehicle() && ped.CurrentVehicle != Game.Player.Character.CurrentVehicle)) &&
                         !(ignoreList != null && ignoreList.Contains(ped)))
                 .Select(p => new
                 {
@@ -134,17 +135,18 @@ namespace VRoguePed
                     Distance = p.Position.DistanceTo(target.Position),
                     IsCop = IsCop(p),
                     IsAttackingTarget = p.IsInCombatAgainst(target),
+                    IsAttackingPlayer = p.IsInCombatAgainst(Game.Player.Character)
                 })
                 .OrderBy(p => p.IsCop ? 0 : 1)
                 .OrderBy(p => p.IsAttackingTarget ? 0 : 1)
+                .OrderBy(p => p.IsAttackingPlayer ? 0 : 1)
                 .ThenBy(p => p.Distance)
                 .Select(p => new VictimPed(p.Ped, GetVictimPedType(p.Ped, target)))
-                .Take(pedCount);
-
-                nearestPeds.AddRange(sortedPedsByDistance);
+                .Take(pedCount)
+                .ToList();
             }
 
-            return nearestPeds;
+            return new List<VictimPed>();
         }
 
         public static List<VictimPed> GetPedAttackers(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null, VictimType pedType = VictimType.NORMAL_PED)
@@ -174,14 +176,14 @@ namespace VRoguePed
 
         public static List<VictimPed> GetNextVictimPeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
         {
-            var playerAttackers = GetPedAttackers(Game.Player.Character, pedCount, maxRadius, ignoreList, VictimType.PLAYER_ATTACKER);
+            //var playerAttackers = GetPedAttackers(Game.Player.Character, pedCount, maxRadius, ignoreList, VictimType.PLAYER_ATTACKER);
 
-            if (playerAttackers.Count == 0)
+            //if (playerAttackers.Count == 0)
             {
                 return GetNearestPrioritizedValidVictimPeds(target, pedCount, maxRadius, ignoreList);
             }
 
-            return playerAttackers;
+            //return playerAttackers;
         }
 
         public static VictimType GetVictimPedType(Ped victimPed, Ped roguePed = null)
@@ -203,7 +205,12 @@ namespace VRoguePed
         private static bool IsCop(Ped ped)
         {
             string modelName = ped.Model.ToString().ToLower();
-            return modelName.Contains("cop") || modelName.Contains("sheriff") || modelName.Contains("csb_cop");
+
+            return modelName.Contains("cop") || modelName.Contains("sheriff")
+                     || modelName.Contains("fib") || modelName.Contains("swat")
+                     || modelName.Contains("marine") || modelName.Contains("security")
+                      || modelName.Contains("ciasec") || modelName.Contains("blackops")
+                       || modelName.Contains("armoured") || modelName.Contains("prisguard");
         }
 
         public static void ResetRoguePed(RoguePed roguePed)
@@ -253,9 +260,9 @@ namespace VRoguePed
             return null;
         }
 
-        public static void DeletePed(Ped ped)
+        public static float Distance(Ped ped1, Ped ped2)
         {
-
+            return ped1.Position.DistanceTo(ped2.Position);
         }
     }
 }
