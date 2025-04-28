@@ -27,6 +27,7 @@ namespace VRoguePed
         public static int RoguePedHealth = 500;
         public static int RoguePedLifetimeInSeconds = 300;
         public static int BatchRoguePedCount = 5;
+        public static int MaxRoguePedsPerTarget = 2;
         public static float MaxRoguePedRecruitDistance = 40f;
         public static float MaxVictimPedSearchDistance = 40f;
         public static float MaxRoguePedDistanceFromPlayer = 60f;
@@ -83,13 +84,10 @@ namespace VRoguePed
                             Core.RoguePeds.Remove(roguePed);
                             Core.ProcessedPeds.Remove(roguePed.Ped);
 
-                            if (roguePed.HasValidVictim())
+                            if (roguePed.Victim != null)
                             {
-                                Core.ProcessedPeds.Remove(roguePed.Victim.Ped);
+                                PedUtil.RemoveVictim(roguePed.Victim);
                             }
-
-                            PedUtil.DeletePedBlip(roguePed.Blip);
-                            PedUtil.DisposePed(roguePed.Ped);
                         }
                         else if (roguePed.State != RogueState.RUNNING_TOWARDS_PLAYER)
                         {
@@ -113,7 +111,7 @@ namespace VRoguePed
 
                             if (removeVictimPed)
                             {
-                                Core.ProcessedPeds.Remove(roguePed.Victim.Ped);
+                                PedUtil.RemoveVictim(roguePed.Victim);
                                 roguePed.Victim = null;
                             }
                         }
@@ -144,7 +142,12 @@ namespace VRoguePed
                 }
 
                 string sub = "RoguePeds.Count = " + Core.RoguePeds.Count;
-                sub += "\nProcessedPeds.Count = " + Core.ProcessedPeds.Count;
+                sub += "\nProcessedPeds.Count = " + Core.ProcessedPeds.Count + "\n";
+
+                foreach(var p in Core.ProcessedPeds)
+                {
+                    sub += "[" + (p == null || !p.Exists() ? "N" : "1") + "]";
+                }
 
                 for (int i = Core.RoguePeds.Count - 1; i >= 0; i--)
                 {
@@ -152,9 +155,9 @@ namespace VRoguePed
 
                     if (roguePed != null && roguePed.IsValid())
                     {
-                        sub += "\n[" + i + "]: TaskSeq(" + roguePed.Ped.TaskSequenceProgress +
-                            "), Dist(" + roguePed.DistanceFromPlayer() + "), State(" + roguePed.State.ToString() +
-                            "), Victim(" + (!Util.IsValid(roguePed.Victim) ? "None)" : ("Found @ " + roguePed.DistanceFromVictim() + ")"));
+                        //sub += "\n[" + i + "]: TS(" + roguePed.Ped.TaskSequenceProgress +
+                        //    "), D(" + roguePed.DistanceFromPlayer() + "), S(" + roguePed.State.ToString() +
+                        //    "), V(" + (!Util.IsValid(roguePed.Victim) ? "None)" : ("Found @ " + roguePed.DistanceFromVictim() + ")"));
 
                         bool hasToClearTasks = false;
 
@@ -185,9 +188,9 @@ namespace VRoguePed
                             }
                             else if (hasReachedInterval)
                             {
-                                if (Util.IsValid(roguePed.Victim))
+                                if (roguePed.Victim != null)
                                 {
-                                    Core.ProcessedPeds.Remove(roguePed.Victim.Ped);
+                                    PedUtil.RemoveVictim(roguePed.Victim);
                                     roguePed.Victim = null;
                                 }
 
@@ -284,7 +287,7 @@ namespace VRoguePed
                     }
                 }
 
-                //UI.ShowSubtitle(sub);
+                UI.ShowSubtitle(sub);
             }
             catch (Exception e)
             {
@@ -420,6 +423,7 @@ namespace VRoguePed
                 MaxRoguePedDistanceBeforeDisband = settings.GetValue<int>("PED_PARAMETERS", "MaxRoguePedDistanceBeforeDisband", 80);
                 RoguePedLifetimeInSeconds = settings.GetValue<int>("PED_PARAMETERS", "RoguePedLifetimeInSeconds", 300);
                 BatchRoguePedCount = settings.GetValue<int>("PED_PARAMETERS", "BatchRoguePedCount", 5);
+                MaxRoguePedsPerTarget = settings.GetValue<int>("PED_PARAMETERS", "MaxRoguePedsPerTarget", 2);
             }
             catch (Exception e)
             {

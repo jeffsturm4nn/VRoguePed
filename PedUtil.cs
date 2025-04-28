@@ -128,18 +128,16 @@ namespace VRoguePed
                         !ped.IsDead &&
                         ped.RelationshipGroup != FriendlyRoguePedsGroupHash &&
                         (ped.IsOnFoot || (ped.IsInVehicle() && ped.CurrentVehicle != Game.Player.Character.CurrentVehicle)) &&
-                        !(ignoreList != null && ignoreList.Contains(ped)))
+                        !(ignoreList != null && ignoreList.Count(p => p == ped) >= MaxRoguePedsPerTarget))
                 .Select(p => new
                 {
                     Ped = p,
                     Distance = p.Position.DistanceTo(target.Position),
                     IsCop = IsCop(p),
                     IsAttackingTarget = p.IsInCombatAgainst(target),
-                    IsAttackingPlayer = p.IsInCombatAgainst(Game.Player.Character)
                 })
                 .OrderBy(p => p.IsCop ? 0 : 1)
                 .OrderBy(p => p.IsAttackingTarget ? 0 : 1)
-                .OrderBy(p => p.IsAttackingPlayer ? 0 : 1)
                 .ThenBy(p => p.Distance)
                 .Select(p => new VictimPed(p.Ped, GetVictimPedType(p.Ped, target)))
                 .Take(pedCount)
@@ -151,11 +149,9 @@ namespace VRoguePed
 
         public static List<VictimPed> GetPedAttackers(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null, VictimType pedType = VictimType.NORMAL_PED)
         {
-            var attackerPeds = new List<VictimPed>();
-
             if (target != null && target.Exists())
             {
-                var sortedPedsByDistance = World.GetNearbyPeds(target, maxRadius)
+                return World.GetNearbyPeds(target, maxRadius)
                     .Where(ped =>
                         ped != null &&
                         ped.Exists() &&
@@ -163,27 +159,26 @@ namespace VRoguePed
                         ped.IsHuman &&
                         !ped.IsDead &&
                         ped.IsInCombatAgainst(target) &&
-                        !(ignoreList != null && ignoreList.Contains(ped)))
+                        !(ignoreList != null && ignoreList.Count(p => p == ped) >= MaxRoguePedsPerTarget))
                 .OrderBy(p => p.Position.DistanceTo(target.Position))
                 .Select(p => new VictimPed(p, pedType))
-                .Take(pedCount);
-
-                attackerPeds.AddRange(sortedPedsByDistance);
+                .Take(pedCount)
+                .ToList();
             }
 
-            return attackerPeds;
+            return new List<VictimPed>();
         }
 
         public static List<VictimPed> GetNextVictimPeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
         {
-            //var playerAttackers = GetPedAttackers(Game.Player.Character, pedCount, maxRadius, ignoreList, VictimType.PLAYER_ATTACKER);
+            var playerAttackers = GetPedAttackers(Game.Player.Character, pedCount, maxRadius, ignoreList, VictimType.PLAYER_ATTACKER);
 
-            //if (playerAttackers.Count == 0)
+            if (playerAttackers.Count == 0)
             {
                 return GetNearestPrioritizedValidVictimPeds(target, pedCount, maxRadius, ignoreList);
             }
 
-            //return playerAttackers;
+            return playerAttackers;
         }
 
         public static VictimType GetVictimPedType(Ped victimPed, Ped roguePed = null)
@@ -192,7 +187,8 @@ namespace VRoguePed
             {
                 return VictimType.PLAYER_ATTACKER;
             }
-            else if (Util.IsValid(roguePed) && victimPed.IsInCombatAgainst(roguePed))
+            else if (Util.IsValid(roguePed) && roguePed != Game.Player.Character 
+                && victimPed.IsInCombatAgainst(roguePed))
             {
                 return VictimType.ROGUE_PED_ATTACKER;
             }
@@ -258,6 +254,14 @@ namespace VRoguePed
             }
 
             return null;
+        }
+
+        public static void RemoveVictim(VictimPed victim)
+        {
+            if(victim != null)
+            {
+                Core.ProcessedPeds.Remove(victim.Ped);
+            }
         }
 
         public static float Distance(Ped ped1, Ped ped2)
