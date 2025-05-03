@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 
 using GTA;
-
+using GTA.Math;
 using static VRoguePed.Core;
 
 namespace VRoguePed

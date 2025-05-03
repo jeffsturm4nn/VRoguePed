@@ -53,7 +53,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ScriptHookVDotNet2">
+    <Reference Include="ScriptHookVDotNet2, Version=2.11.6.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\cs-dependencies\ScriptHookVNet\ScriptHookVDotNet2.dll</HintPath>
     </Reference>
     <Reference Include="System" />

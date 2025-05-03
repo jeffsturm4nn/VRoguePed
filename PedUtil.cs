@@ -56,7 +56,7 @@ namespace VRoguePed
             roguePed.CanRagdoll = false;
             roguePed.CanSufferCriticalHits = false;
             roguePed.CanWrithe = false;
-            //roguePed.MaxSpeed = 100f;
+            roguePed.MaxSpeed = 100f;
             roguePed.WetnessHeight = 2f;
             roguePed.AlwaysKeepTask = true;
             roguePed.BlockPermanentEvents = true;

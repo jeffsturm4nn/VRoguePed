@@ -96,12 +96,6 @@ namespace VRoguePed
         //    return !p1.Ped.Equals(p2.Ped);
         //}
 
-         ~RoguePed()
-        {
-            PedUtil.DeletePedBlip(Blip);
-            PedUtil.DisposePed(Ped);
-        }
-
         public override string ToString()
         {
             return "RoguePed{Ped=" + (Ped != null ? Ped.ToString() : "null") +

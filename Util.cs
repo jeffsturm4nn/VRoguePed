@@ -197,58 +197,6 @@ namespace VRoguePed
             }
         }
 
-        //public static bool IsEntityAfterAnother(Entity entity1, Entity entity2)
-        //{
-        //    Vector3 entity1Dimensions = entity1.Model.GetDimensions();
-        //    Vector3 positionEntity1 = (entity1.ForwardVector) * entity1.Position; 
-        //}
-
-        public static Vector3 GetNearestBonePosition(Ped ped, Vector3 hitPosition)
-        {
-            if (ped == null)
-                return new Vector3(0, 0, 0);
-
-            float shortestBoneDistance = float.MaxValue;
-            Vector3 nearestBonePosition = new Vector3(0, 0, 0);
-
-            for (int i = 0; i < PedBoneArray.Length; i++)
-            {
-                Vector3 bonePosition = ped.GetBoneCoord(PedBoneArray[i]);
-                float boneDistance = bonePosition.DistanceTo(hitPosition);
-
-                if (boneDistance < shortestBoneDistance)
-                {
-                    shortestBoneDistance = boneDistance;
-                    nearestBonePosition = bonePosition;
-                }
-            }
-
-            return nearestBonePosition;
-        }
-
-        public static int GetNearestBoneIndex(Ped ped, Vector3 hitPosition)
-        {
-            if (ped == null)
-                return 0;
-
-            float shortestBoneDistance = float.MaxValue;
-            int nearestBoneIndex = 0;
-
-            for (int i = 0; i < PedBoneArray.Length; i++)
-            {
-                Vector3 bonePosition = ped.GetBoneCoord(PedBoneArray[i]);
-                float boneDistance = bonePosition.DistanceTo(hitPosition);
-                Bone currentBone = PedBoneArray[i];
-
-                if (boneDistance < shortestBoneDistance)
-                {
-                    shortestBoneDistance = boneDistance;
-                    nearestBoneIndex = ped.GetBoneIndex(currentBone);
-                }
-            }
-
-            return nearestBoneIndex;
-        }
 
         public static Vector3 CalculateDirectionVector3d(Vector3 rotation)
         {
@@ -344,7 +292,7 @@ namespace VRoguePed
         public static void Subtitle(string message, int durationInMs = 1900)
         {
             //GTA.UI.Screen.ShowSubtitle(message, durationInMs);
-            //GTA.UI.ShowSubtitle(message, durationInMs);
+            GTA.UI.ShowSubtitle(message, durationInMs);
         }
     }
 }
