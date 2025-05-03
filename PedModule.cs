@@ -34,7 +34,7 @@ namespace VRoguePed
         public static float MinVictimPedDistanceToShoot = 19f;
         public static float MaxRoguePedWanderDistance = 30f;
         public static float MaxRoguePedDistanceBeforeDisband = 80f;
-        public static bool RoguePedsFollowPlayer = false;
+        public static bool RoguePedsFollowPlayer = true;
 
         public static void InitPedRelationshipGroups()
         {
@@ -196,7 +196,10 @@ namespace VRoguePed
 
                         if (hasToClearTasks)
                         {
-                            roguePed.Ped.Task.ClearAllImmediately();
+                            if (!roguePed.Ped.IsInVehicle())
+                            {
+                                roguePed.Ped.Task.ClearAllImmediately(); 
+                            }
                         }
                         else if (roguePed.Ped.TaskSequenceProgress == Constants.TASK_SEQUENCE_IN_PROGRESS)
                         {
@@ -291,7 +294,7 @@ namespace VRoguePed
                                         {
                                             if (!roguePed.Ped.IsInCombatAgainst(roguePed.Victim.Ped))
                                             {
-                                                PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.FightAgainst(roguePed.Victim.Ped); });
+                                                PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.FightAgainst(roguePed.Victim.Ped, 5000); });
                                             }
                                         }
                                         else
@@ -332,29 +335,53 @@ namespace VRoguePed
                         }
                         else if (roguePed.State == RogueState.FOLLOWING_PLAYER)
                         {
-                            sub += "[FOLLOWING_PLAYER]\n";
+                            sub += "[FOLLOWING_PLAYER]";
 
                             if (RoguePedsFollowPlayer)
                             {
                                 if (hasReachedInterval)
                                 {
-                                    if (roguePed.DistanceFromPlayer() > 7f)
-                                    {
-                                        Vector3 offsetFromPlayer = new Vector3(0f, 1f, 0f);
+                                    Vector3 offsetFromPlayer = new Vector3(0f, 2f, 0f);
 
-                                        if (!Game.Player.Character.IsRunning && !Game.Player.Character.IsSprinting)
+                                    if (Game.Player.Character.IsRunning || Game.Player.Character.IsSprinting || roguePed.DistanceFromPlayer() > 12f)
+                                    {
+                                        roguePed.Ped.Task.RunTo((Game.Player.Character.Position + offsetFromPlayer), false);
+                                    }
+                                    else if (!Game.Player.Character.IsInVehicle())
+                                    {
+                                        if (roguePed.DistanceFromPlayer() > 4f)
                                         {
                                             roguePed.Ped.Task.GoTo(Game.Player.Character, offsetFromPlayer, 1000);
                                         }
-                                        else
+                                        else if(roguePed.Ped.IsInVehicle())
                                         {
-                                            roguePed.Ped.Task.RunTo((Game.Player.Character.Position + offsetFromPlayer), false, 1000);
+                                            PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.LeaveVehicle(); });
+                                        }
+                                    }
+                                    else if (!roguePed.Ped.IsInVehicle(Game.Player.Character.CurrentVehicle))
+                                    {
+                                        VehicleSeat vehicleSeat = VehicleUtil.GetPlayerVehicleFreeSeat();
+
+                                        sub += " Seat(" + vehicleSeat.ToString() + ")";
+
+                                        if (vehicleSeat != VehicleSeat.None)
+                                        {
+                                            PedUtil.PerformTaskSequence(roguePed.Ped, ts =>
+                                            {
+                                                ts.AddTask.ClearAll();
+                                                ts.AddTask.EnterVehicle(Game.Player.Character.CurrentVehicle, vehicleSeat, -1, 100f);
+                                            });
                                         }
                                     }
                                 }
                             }
                             else
                             {
+                                if (roguePed.Ped.IsInVehicle())
+                                {
+                                    PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.LeaveVehicle(); });
+                                }
+
                                 roguePed.State = RogueState.LOOKING_FOR_VICTIM;
                             }
                         }
