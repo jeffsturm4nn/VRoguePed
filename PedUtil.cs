@@ -31,9 +31,14 @@ namespace VRoguePed
 
         public static void MakePedCombatResilient(Ped ped)
         {
+            Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 0, false);
+            Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 11, false);
+            Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 12, false);
+
             Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 2, true);
             Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 5, true);
             Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 13, true);
+            Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 50, true);
             Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 58, true);
 
             Function.Call(Hash.SET_PED_DESIRED_MOVE_BLEND_RATIO, ped.Handle, 3.0f);
@@ -44,6 +49,8 @@ namespace VRoguePed
             Function.Call(Hash.SET_PED_FLEE_ATTRIBUTES, ped.Handle, 2, false);
 
             Function.Call(Hash.SET_PED_COMBAT_ABILITY, ped.Handle, 100);
+
+            
         }
 
         public static void SetRoguePedParameters(Ped roguePed)

@@ -198,7 +198,7 @@ namespace VRoguePed
                         {
                             if (!roguePed.Ped.IsInVehicle())
                             {
-                                roguePed.Ped.Task.ClearAllImmediately(); 
+                                roguePed.Ped.Task.ClearAll();
                             }
                         }
                         else if (roguePed.Ped.TaskSequenceProgress == Constants.TASK_SEQUENCE_IN_PROGRESS)
@@ -349,27 +349,30 @@ namespace VRoguePed
                                     }
                                     else if (!Game.Player.Character.IsInVehicle())
                                     {
-                                        if (roguePed.DistanceFromPlayer() > 4f)
+                                        if (!roguePed.Ped.IsInVehicle())
                                         {
-                                            roguePed.Ped.Task.GoTo(Game.Player.Character, offsetFromPlayer, 1000);
+                                            if (roguePed.DistanceFromPlayer() > 4f)
+                                            {
+                                                roguePed.Ped.Task.GoTo(Game.Player.Character, offsetFromPlayer, 1000);
+                                            }
                                         }
-                                        else if(roguePed.Ped.IsInVehicle())
+                                        else
                                         {
                                             PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.LeaveVehicle(); });
                                         }
                                     }
                                     else if (!roguePed.Ped.IsInVehicle(Game.Player.Character.CurrentVehicle))
                                     {
-                                        VehicleSeat vehicleSeat = VehicleUtil.GetPlayerVehicleFreeSeat();
+                                        roguePed.PlayerVehicleSeat = VehicleUtil.GetPlayerVehicleFreeSeat();
 
-                                        sub += " Seat(" + vehicleSeat.ToString() + ")";
+                                        sub += " Seat(" + roguePed.PlayerVehicleSeat.ToString() + ")";
 
-                                        if (vehicleSeat != VehicleSeat.None)
+                                        if (roguePed.PlayerVehicleSeat != VehicleSeat.None)
                                         {
                                             PedUtil.PerformTaskSequence(roguePed.Ped, ts =>
                                             {
                                                 ts.AddTask.ClearAll();
-                                                ts.AddTask.EnterVehicle(Game.Player.Character.CurrentVehicle, vehicleSeat, -1, 100f);
+                                                ts.AddTask.EnterVehicle(Game.Player.Character.CurrentVehicle, roguePed.PlayerVehicleSeat, -1, 100f);
                                             });
                                         }
                                     }
