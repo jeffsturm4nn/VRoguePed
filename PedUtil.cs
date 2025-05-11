@@ -20,6 +20,16 @@ namespace VRoguePed
             return Function.Call<bool>(Hash.GET_IS_TASK_ACTIVE, ped, TASK_HASH_WANDERING_AROUND);
         }
 
+        public static bool IsRoguePed(Ped ped)
+        {
+            return Core.RoguePeds.Where(rp => rp.Ped == ped).Any();
+        }
+
+        public static bool IsProcessedPed(Ped ped)
+        {
+            return Core.ProcessedPeds.Where(pp => pp == ped).Any();
+        }
+
         public static void DisposePed(Ped ped)
         {
             if (ped != null && ped.Exists())
@@ -50,7 +60,7 @@ namespace VRoguePed
 
             Function.Call(Hash.SET_PED_COMBAT_ABILITY, ped.Handle, 100);
 
-            
+
         }
 
         public static void SetRoguePedParameters(Ped roguePed)
@@ -135,18 +145,21 @@ namespace VRoguePed
                         !ped.IsDead &&
                         ped.RelationshipGroup != FriendlyRoguePedsGroupHash &&
                         (ped.IsOnFoot || (ped.IsInVehicle() && ped.CurrentVehicle != Game.Player.Character.CurrentVehicle)) &&
+                        !IsRoguePed(ped) &&
                         !(ignoreList != null && ignoreList.Count(p => p == ped) >= MaxRoguePedsPerTarget))
                 .Select(p => new
                 {
                     Ped = p,
                     Distance = p.Position.DistanceTo(target.Position),
                     IsCop = IsCop(p),
-                    IsAttackingTarget = p.IsInCombatAgainst(target),
+                    IsAttackingTarget = (p.IsInCombatAgainst(target) || HasPedAttackedAnother(target, p))
+                    //IsAttackingPlayer = p.IsInCombatAgainst(Game.Player.Character)
                 })
                 .OrderBy(p => p.IsCop ? 0 : 1)
                 .OrderBy(p => p.IsAttackingTarget ? 0 : 1)
+                //.OrderBy(p => p.IsAttackingPlayer ? 0 : 1)
                 .ThenBy(p => p.Distance)
-                .Select(p => new VictimPed(p.Ped, GetVictimPedType(p.Ped, target)))
+                .Select(p => new VictimPed(p.Ped))
                 .Take(pedCount)
                 .ToList();
             }
@@ -163,9 +176,12 @@ namespace VRoguePed
                         ped != null &&
                         ped.Exists() &&
                         ped != target &&
+                        ped != Game.Player.Character &&
                         ped.IsHuman &&
                         !ped.IsDead &&
-                        ped.IsInCombatAgainst(target) &&
+                        HasPedAttackedAnother(target, ped) &&
+                        ped.RelationshipGroup != FriendlyRoguePedsGroupHash &&
+                        !IsRoguePed(ped) &&
                         !(ignoreList != null && ignoreList.Count(p => p == ped) >= MaxRoguePedsPerTarget))
                 .OrderBy(p => p.Position.DistanceTo(target.Position))
                 .Select(p => new VictimPed(p, pedType))
@@ -176,13 +192,42 @@ namespace VRoguePed
             return new List<VictimPed>();
         }
 
+        public static List<VictimPed> GetNextRoguePedsAttackers(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
+        {
+            if (target != null && target.Exists())
+            {
+                List<VictimPed> victimPeds = new List<VictimPed>();
+
+                foreach (RoguePed roguePed in Core.RoguePeds)
+                {
+                    if (roguePed != null && roguePed.IsValid())
+                    {
+                        victimPeds.AddRange(GetPedAttackers(roguePed.Ped, pedCount, maxRadius, ignoreList, VictimType.ROGUE_PED_ATTACKER));
+                    }
+                }
+
+                return victimPeds
+                    .OrderBy(victim => Distance(victim.Ped, target))
+                    .ToList();
+            }
+
+            return new List<VictimPed>();
+        }
+
         public static List<VictimPed> GetNextVictimPeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
         {
-            var playerAttackers = GetPedAttackers(Game.Player.Character, pedCount, maxRadius, ignoreList, VictimType.PLAYER_ATTACKER);
+            var playerAttackers = GetPedAttackers(Game.Player.Character, 1, 80f, ignoreList, VictimType.PLAYER_ATTACKER);
 
             if (playerAttackers.Count == 0)
             {
-                return GetNearestPrioritizedValidVictimPeds(target, pedCount, maxRadius, ignoreList);
+                var priorityVictimPeds = GetNearestPrioritizedValidVictimPeds(target, pedCount, maxRadius, ignoreList);
+
+                if (priorityVictimPeds.Count == 0)
+                {
+                    return GetNextRoguePedsAttackers(target, pedCount, 80f, ignoreList);
+                }
+
+                return priorityVictimPeds;
             }
 
             return playerAttackers;
@@ -194,7 +239,7 @@ namespace VRoguePed
             {
                 return VictimType.PLAYER_ATTACKER;
             }
-            else if (Util.IsValid(roguePed) && roguePed != Game.Player.Character 
+            else if (Util.IsValid(roguePed) && roguePed != Game.Player.Character
                 && victimPed.IsInCombatAgainst(roguePed))
             {
                 return VictimType.ROGUE_PED_ATTACKER;
@@ -224,7 +269,7 @@ namespace VRoguePed
 
             if (clonedPed != null)
             {
-                roguePed.LifetimeInMs = RoguePedLifetimeInSeconds * 1000;
+                roguePed.ClearTasksTime = RoguePedClearTasksIntervalInSecs * 1000;
 
                 Core.ProcessedPeds[pedIndex] = roguePed.Ped;
                 SetRoguePedParameters(roguePed.Ped);
@@ -265,7 +310,7 @@ namespace VRoguePed
 
         public static void RemoveVictim(VictimPed victim)
         {
-            if(victim != null)
+            if (victim != null)
             {
                 Core.ProcessedPeds.Remove(victim.Ped);
             }
@@ -274,6 +319,16 @@ namespace VRoguePed
         public static float Distance(Ped ped1, Ped ped2)
         {
             return ped1.Position.DistanceTo(ped2.Position);
+        }
+
+        public static bool IsPedFatallyInjured(Ped ped)
+        {
+            return Function.Call<bool>(Hash.IS_PED_FATALLY_INJURED, ped);
+        }
+
+        public static bool HasPedAttackedAnother(Ped target, Ped attacker, bool clearAttackerStatus = true)
+        {
+            return Function.Call<bool>(Hash.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY, target.Handle, attacker.Handle, clearAttackerStatus);
         }
     }
 }

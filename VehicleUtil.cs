@@ -19,7 +19,6 @@ namespace VRoguePed
                         && !v.IsOnFire
                         && !v.IsUpsideDown
                         && v.IsDriveable
-                        //&& v.WheelType != VehicleWheelType.BikeWheels
                         && v.IsStopped
                         )
                     .OrderBy(p => Math.Abs(p.Position.DistanceTo(ped.Position)))
@@ -34,7 +33,6 @@ namespace VRoguePed
 
             if (player.IsInVehicle() && player.CurrentVehicle.PassengerSeats > 0)
             {
-                //for(int i = 0; i<player.CurrentVehicle.PassengerSeats; i++)
                 for (int i = player.CurrentVehicle.PassengerSeats - 1; i >= 0; i--)
                 {
                     VehicleSeat vehicleSeat = (VehicleSeat)i;

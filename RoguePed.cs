@@ -17,7 +17,8 @@ namespace VRoguePed
             PlayerVehicleSeat = playerVehicleSeat;
             State = RogueState.LOOKING_FOR_VICTIM;
             Blip = blip;
-            LifetimeInMs = lifetimeInMs;
+            ClearTasksTime = lifetimeInMs;
+            TargetCombatDuration = 0;
 
             if (Ped == null)
             {
@@ -32,7 +33,8 @@ namespace VRoguePed
             PlayerVehicleSeat = playerVehicleSeat;
             State = RogueState.LOOKING_FOR_VICTIM;
             Blip = blip;
-            LifetimeInMs = lifetimeInMs;
+            ClearTasksTime = lifetimeInMs;
+            TargetCombatDuration = 0;
 
             if (Ped == null)
             {
@@ -49,7 +51,9 @@ namespace VRoguePed
 
         public Blip Blip { get; set; }
 
-        public int LifetimeInMs { get; set; }
+        public int ClearTasksTime { get; set; }
+
+        public int TargetCombatDuration { get; set; }
 
         public bool IsValid()
         {
@@ -58,7 +62,7 @@ namespace VRoguePed
 
         public bool HasValidVictim()
         {
-            return (Util.IsValid(Victim) && Victim.Ped.IsAlive);
+            return (Util.IsValid(Victim) && Victim.Ped.IsAlive && !PedUtil.IsPedFatallyInjured(Victim.Ped));
         }
 
         public bool HasBlip()
@@ -86,6 +90,16 @@ namespace VRoguePed
             return -1.0f;
         }
 
+
+        public bool IsInCombatWithVictim()
+        {
+            if(IsValid() && HasValidVictim())
+            {
+                return (Ped.IsInCombatAgainst(Victim.Ped));
+            }
+
+            return false;
+        }
         //public static bool operator == (RoguePed p1, RoguePed p2)
         //{
         //    return p1.Ped.Equals(p2.Ped);
