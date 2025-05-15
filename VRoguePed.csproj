@@ -72,6 +72,7 @@
     <Compile Include="InputModule.cs" />
     <Compile Include="Keyboard.cs" />
     <Compile Include="PedModule.cs" />
+    <Compile Include="PedPool.cs" />
     <Compile Include="PedUtil.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Core.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="TriggerCondition.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="VehicleUtil.cs" />
+    <Compile Include="VictimData.cs" />
     <Compile Include="VictimPed.cs" />
     <Compile Include="VictimType.cs" />
     <Compile Include="VRoguePedMain.cs" />

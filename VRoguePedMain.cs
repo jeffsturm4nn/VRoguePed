@@ -51,6 +51,8 @@ namespace VRoguePed
 
             PedModule.CheckValidRoguePeds();
             PedModule.UpdateRoguePedsState();
+
+            PedPool.StepUpdateTime(Constants.UPDATE_INTERVAL);
         }
 
         public void OnKeyDown(object sender, KeyEventArgs e)

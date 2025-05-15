@@ -147,7 +147,7 @@ namespace VRoguePed
         {
             try
             {
-                const int timeInterval = 250 / Constants.UPDATE_INTERVAL;
+                const int timeInterval = 200 / Constants.UPDATE_INTERVAL;
                 bool hasReachedInterval = false;
 
                 if (++timeCounter >= timeInterval)
@@ -165,9 +165,9 @@ namespace VRoguePed
 
                     if (roguePed != null && roguePed.IsValid())
                     {
-                        sub += "\n[i=" + i + ", TS=" + roguePed.Ped.TaskSequenceProgress +
-                            ", D=" + ((int)roguePed.DistanceFromPlayer()) + "=, S=" + roguePed.State.ToString().Split('_')[0] +
-                            ", V=" + (!Util.IsValid(roguePed.Victim) ? "None" : ("@ " + ((int)roguePed.DistanceFromVictim()) + "]"));
+                        //sub += "[i=" + i + ", TS=" + roguePed.Ped.TaskSequenceProgress +
+                        //    ", D=" + ((int)roguePed.DistanceFromPlayer()) + "=, S=" + roguePed.State.ToString().Split('_')[0] +
+                        //    ", V=" + (!Util.IsValid(roguePed.Victim) ? "None" : ("@ " + ((int)roguePed.DistanceFromVictim()) + "]"));
 
                         bool hasToClearTasks = false;
 
@@ -200,7 +200,7 @@ namespace VRoguePed
                         }
                         else if (roguePed.State == RogueState.LOOKING_FOR_VICTIM)
                         {
-                            sub += "[LOOKING_FOR_VICTIM]";
+                            //sub += "[LOOKING_FOR_VICTIM]";
 
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
@@ -238,7 +238,7 @@ namespace VRoguePed
                         }
                         /*else if (roguePed.State == RogueState.RUNNING_TOWARDS_VICTIM)
                         {
-                            sub += "[RUNNING_TOWARDS_VICTIM]";
+                            //sub += "[RUNNING_TOWARDS_VICTIM]";
 
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
@@ -285,7 +285,7 @@ namespace VRoguePed
                                 {
                                     //if (!roguePed.Victim.Ped.IsInVehicle())
                                     //{
-                                        if (!roguePed.IsInCombatWithVictim())
+                                        //if (!roguePed.IsInCombatWithVictim())
                                         {
                                             roguePed.Ped.Task.FightAgainst(roguePed.Victim.Ped, -1);
                                         }
@@ -331,7 +331,7 @@ namespace VRoguePed
                         }
                         else if (roguePed.State == RogueState.FOLLOWING_PLAYER)
                         {
-                            sub += "[FOLLOWING_PLAYER]";
+                            //sub += "[FOLLOWING_PLAYER]";
 
                             if (RoguePedsFollowPlayer)
                             {
@@ -456,6 +456,8 @@ namespace VRoguePed
                         victimPed = new VictimPed(((Ped)targetEntity), VictimType.PLAYER_TARGET);
                     }
                 }
+
+                roguePed.Task.ClearAll();
 
                 PedUtil.SetRoguePedParameters(roguePed);
                 PedUtil.MakePedCombatResilient(roguePed);
