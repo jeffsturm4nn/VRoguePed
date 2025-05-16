@@ -14,6 +14,7 @@ namespace VRoguePed
         public RoguePed(Ped ped, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null, int lifetimeInMs = 300*1000)
         {
             Ped = ped;
+            IsInUse = true;
             PlayerVehicleSeat = playerVehicleSeat;
             State = RogueState.LOOKING_FOR_VICTIM;
             Blip = blip;
@@ -29,6 +30,7 @@ namespace VRoguePed
         public RoguePed(Ped ped, VictimPed victim, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null, int lifetimeInMs = 300 * 1000)
         {
             Ped = ped;
+            IsInUse = true;
             Victim = victim;
             PlayerVehicleSeat = playerVehicleSeat;
             State = RogueState.LOOKING_FOR_VICTIM;
@@ -43,6 +45,9 @@ namespace VRoguePed
         }
 
         public Ped Ped { get; set; }
+
+        public bool IsInUse {  get; set; }
+
         public VehicleSeat PlayerVehicleSeat { get; set; }
 
         public VictimPed Victim { get; set; }
@@ -57,7 +62,7 @@ namespace VRoguePed
 
         public bool IsValid()
         {
-            return (Ped != null && Ped.Exists() && Ped.IsAlive);
+            return (Ped != null && IsInUse && Ped.Exists() && Ped.IsAlive);
         }
 
         public bool HasValidVictim()

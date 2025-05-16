@@ -17,7 +17,7 @@ namespace VRoguePed
         {
             Ped = ped;
             Distance = distance;
-            IsAttackingRoguePeds = isAttackingOtherRoguePeds;
+            IsAttackingOtherRoguePeds = isAttackingOtherRoguePeds;
             IsCop = isCop;
             IsAttackingTarget = isAttackingTarget;
             IsAttackingPlayer = isAttackingPlayer;
@@ -26,7 +26,7 @@ namespace VRoguePed
         public Ped Ped { get; set; }
         public float Distance { get; set; }
 
-        public bool IsAttackingRoguePeds {  get; set; }
+        public bool IsAttackingOtherRoguePeds {  get; set; }
         public bool IsCop {  get; set; }
         public bool IsAttackingTarget {  get; set; }
         public bool IsAttackingPlayer {  get; set; }

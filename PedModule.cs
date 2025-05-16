@@ -56,7 +56,8 @@ namespace VRoguePed
 
                 if (roguePed != null && roguePed.IsValid())
                 {
-                    roguePed.Ped.Kill();
+                    //roguePed.Ped.Kill();
+                    roguePed.IsInUse = false;
                 }
             }
         }
@@ -106,13 +107,13 @@ namespace VRoguePed
                         {
                             if (roguePed.HasValidVictim())
                             {
-                                if (roguePed.Victim.Type == VictimType.NORMAL_PED)
+                                if (roguePed.Victim.Type != VictimType.PLAYER_ATTACKER &&
+                                    roguePed.Victim.Type != VictimType.PLAYER_TARGET)
                                 {
                                     if ((roguePed.DistanceFromVictim() >= MaxVictimPedOnFootChaseDistance) ||
                                          ((roguePed.Victim.Ped.IsFleeing || roguePed.Victim.Ped.Velocity.Length() > 6f)
                                          && roguePed.DistanceFromVictim() >= MaxVictimPedInVehicleChaseDistance))
                                     {
-                                        roguePed.Ped.Task.ClearAll();
                                         removeVictimPed = true;
                                         roguePed.State = RogueState.LOOKING_FOR_VICTIM;
                                     }
@@ -123,10 +124,16 @@ namespace VRoguePed
                                     roguePed.State = RogueState.RUNNING_TOWARDS_PLAYER;
                                 }
                             }
+                            else if(roguePed.Victim != null)
+                            {
+                                removeVictimPed = true;
+                            }
                         }
 
                         if (removeVictimPed)
                         {
+                            roguePed.Ped.Task.ClearAll();
+
                             PedUtil.RemoveVictim(roguePed.Victim);
                             roguePed.Victim = null;
                         }
@@ -165,16 +172,18 @@ namespace VRoguePed
 
                     if (roguePed != null && roguePed.IsValid())
                     {
-                        //sub += "[i=" + i + ", TS=" + roguePed.Ped.TaskSequenceProgress +
-                        //    ", D=" + ((int)roguePed.DistanceFromPlayer()) + "=, S=" + roguePed.State.ToString().Split('_')[0] +
-                        //    ", V=" + (!Util.IsValid(roguePed.Victim) ? "None" : ("@ " + ((int)roguePed.DistanceFromVictim()) + "]"));
+                        sub += "[i=" + i + "|TS=" + roguePed.Ped.TaskSequenceProgress + 
+                            ",W=" + (PedUtil.IsPedWanderingAround(roguePed.Ped) ? "1" : "0") +
+                            "|D=" + ((int)roguePed.DistanceFromPlayer()) + 
+                            "|S=" + roguePed.State.ToString().Split('_')[0].Substring(0,2) +
+                            "|V=" + (!Util.IsValid(roguePed.Victim) ? "-1" : ("@" + ((int)roguePed.DistanceFromVictim()) + "]"));
 
                         bool hasToClearTasks = false;
 
-                        if (roguePed.Ped.IsInCombat)
-                        {
-                            roguePed.TargetCombatDuration += Constants.UPDATE_INTERVAL;
-                        }
+                        //if (roguePed.Ped.IsInCombat)
+                        //{
+                        //    roguePed.TargetCombatDuration += Constants.UPDATE_INTERVAL;
+                        //}
 
                         if (roguePed.ClearTasksTime > 0)
                         {
@@ -194,7 +203,8 @@ namespace VRoguePed
                                 roguePed.Ped.Task.ClearAll();
                             }
                         }
-                        else if (roguePed.Ped.TaskSequenceProgress == Constants.TASK_SEQUENCE_IN_PROGRESS)
+                        else if (roguePed.Ped.TaskSequenceProgress == Constants.TASK_SEQUENCE_IN_PROGRESS
+                            && roguePed.State != RogueState.LOOKING_FOR_VICTIM)
                         {
                             continue;
                         }
@@ -224,16 +234,20 @@ namespace VRoguePed
 
                                 if (Util.IsValid(victim))
                                 {
+                                    roguePed.Ped.Task.ClearAll();
+
                                     roguePed.Victim = victim;
                                     roguePed.State = RogueState.ATTACKING_VICTIM;
                                     Core.ProcessedPeds.Add(victim.Ped);
                                 }
-                                else if (!PedUtil.IsPedWanderingAround(roguePed.Ped))
+                                else if (!PedUtil.IsPedWanderingAround(roguePed.Ped) || roguePed.Ped.IsStopped)
                                 {
-                                    roguePed.Ped.Task.WanderAround(Game.Player.Character.Position, MaxRoguePedWanderDistance);
+                                    //roguePed.Ped.Task.WanderAround(Game.Player.Character.Position, MaxRoguePedWanderDistance);
+
+                                    PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.WanderAround(Game.Player.Character.Position, MaxRoguePedWanderDistance); });
                                 }
 
-                                roguePed.Ped.WetnessHeight = 4f;
+                                roguePed.Ped.WetnessHeight = 6f;
                             }
                         }
                         /*else if (roguePed.State == RogueState.RUNNING_TOWARDS_VICTIM)
@@ -269,7 +283,7 @@ namespace VRoguePed
                         }*/
                         else if (roguePed.State == RogueState.ATTACKING_VICTIM)
                         {
-                            sub += "[ATTACKING_VICTIM]";
+                            //sub += "[ATTACKING_VICTIM]";
 
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
@@ -283,25 +297,43 @@ namespace VRoguePed
                             {
                                 if (hasReachedInterval)
                                 {
-                                    //if (!roguePed.Victim.Ped.IsInVehicle())
-                                    //{
-                                        //if (!roguePed.IsInCombatWithVictim())
+                                    if (!roguePed.Victim.Ped.IsInVehicle())
+                                    {
+                                        if (!roguePed.IsInCombatWithVictim())
                                         {
-                                            roguePed.Ped.Task.FightAgainst(roguePed.Victim.Ped, -1);
+                                            //roguePed.Ped.Task.ClearAll();
+                                            //roguePed.Ped.Task.FightAgainst(roguePed.Victim.Ped, -1);
+                                            PedUtil.PerformTaskSequence(roguePed.Ped,
+                                                    ts => { ts.AddTask.FightAgainst(roguePed.Victim.Ped, -1); });
                                         }
-                                    //}
-                                    //else
-                                    //{
+                                    }
+                                    else
+                                    {
+                                        if (!roguePed.Ped.IsInFlyingVehicle && roguePed.DistanceFromVictim() < 5f)
+                                        {
+                                            roguePed.Ped.Task.ShootAt(roguePed.Victim.Ped, 4000, FiringPattern.FullAuto);
+                                        }
+                                        else
+                                        {
+                                            if (!roguePed.IsInCombatWithVictim())
+                                            {
+                                                //roguePed.Ped.Task.ClearAll();
+                                                //roguePed.Ped.Task.FightAgainst(roguePed.Victim.Ped, -1);
+                                                PedUtil.PerformTaskSequence(roguePed.Ped,
+                                                    ts => { ts.AddTask.FightAgainst(roguePed.Victim.Ped, -1); });
+                                            }
+                                        }
+
                                         //if (roguePed.TargetCombatDuration <= 4000)
                                         //{
                                         //    roguePed.Ped.Task.ShootAt(roguePed.Victim.Ped, 4000, FiringPattern.FullAuto);
                                         //}
                                         //else if (!roguePed.IsInCombatWithVictim())
-                                    //    {
-                                    //        roguePed.Ped.Task.ClearAll();
-                                    //        roguePed.Ped.Task.FightAgainst(roguePed.Victim.Ped, -1);
-                                    //    }
-                                    //}
+                                        //    {
+                                        //        roguePed.Ped.Task.ClearAll();
+                                        //        roguePed.Ped.Task.FightAgainst(roguePed.Victim.Ped, -1);
+                                        //    }
+                                    }
                                 }
                             }
                             else
@@ -311,7 +343,7 @@ namespace VRoguePed
                         }
                         else if (roguePed.State == RogueState.RUNNING_TOWARDS_PLAYER)
                         {
-                            sub += "[RUNNING_TOWARDS_PLAYER]";
+                            //sub += "[RUNNING_TOWARDS_PLAYER]";
 
                             if (RoguePedsFollowPlayer)
                             {

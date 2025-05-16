@@ -15,7 +15,7 @@ namespace VRoguePed
         private static List<Ped> StoredPeds = new List<Ped>();
         private static int UpdateTimeInMs = 1000000;
 
-        private const int FetchWorldPedsIntervalInMs = 500;
+        private const int FetchWorldPedsIntervalInMs = 200;
         private const int MaxPedSearchRadius = 240;
 
         public static List<Ped> GetStoredPeds()

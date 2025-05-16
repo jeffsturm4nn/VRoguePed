@@ -51,8 +51,8 @@ namespace VRoguePed
             Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 50, true);
             Function.Call(Hash.SET_PED_COMBAT_ATTRIBUTES, ped.Handle, 58, true);
 
-            Function.Call(Hash.SET_PED_DESIRED_MOVE_BLEND_RATIO, ped.Handle, 3.0f);
-            Function.Call(Hash.SET_PED_MOVE_RATE_OVERRIDE, ped.Handle, 5.0f);
+            //Function.Call(Hash.SET_PED_DESIRED_MOVE_BLEND_RATIO, ped.Handle, 3.0f);
+            //Function.Call(Hash.SET_PED_MOVE_RATE_OVERRIDE, ped.Handle, 5.0f);
 
             Function.Call(Hash.SET_PED_FLEE_ATTRIBUTES, ped.Handle, 0, false);
             Function.Call(Hash.SET_PED_FLEE_ATTRIBUTES, ped.Handle, 1, false);
@@ -74,9 +74,9 @@ namespace VRoguePed
             roguePed.CanSufferCriticalHits = false;
             roguePed.CanWrithe = false;
             roguePed.MaxSpeed = 100f;
-            roguePed.WetnessHeight = 2f;
+            roguePed.WetnessHeight = 6f;
             roguePed.AlwaysKeepTask = true;
-            roguePed.BlockPermanentEvents = true;
+            roguePed.BlockPermanentEvents = false;
             roguePed.FiringPattern = FiringPattern.FullAuto;
             roguePed.CanSwitchWeapons = true;
         }
@@ -131,6 +131,30 @@ namespace VRoguePed
             return nearestPeds;
         }
 
+        public static int GetVictimTargetPriority(VictimData victimData)
+        {
+            if(victimData.IsAttackingPlayer)
+            {
+                return -500;
+            }
+            else if(victimData.IsAttackingTarget)
+            {
+                return 0;
+            }
+            else if(victimData.IsAttackingOtherRoguePeds)
+            {
+                return 500;
+            }
+            else if(victimData.IsCop)
+            {
+                return 1000;
+            }
+            else
+            {
+                return 1500;
+            }
+        }
+
         public static List<VictimPed> GetNearestPrioritizedValidVictimPeds(Ped target, int pedCount, float maxRadius = 40f, List<Ped> ignoreList = null)
         {
             if (target != null && target.Exists())
@@ -152,14 +176,12 @@ namespace VRoguePed
                     Ped = p,
                     Distance = p.Position.DistanceTo(target.Position),
                     IsCop = IsCop(p),
-                    IsAttackingRoguePeds = HasAttackedRoguePeds(p, target),
+                    IsAttackingOtherRoguePeds = HasAttackedRoguePeds(p, target),
                     IsAttackingTarget = (p.IsInCombatAgainst(target) || HasPedAttackedAnother(target, p)),
                     IsAttackingPlayer = p.IsInCombatAgainst(Game.Player.Character)
                 })
-                .OrderBy(vd => vd.IsCop ? 3 : 100)
-                .OrderBy(vd => vd.IsAttackingRoguePeds ? 2 : 100)
-                .OrderBy(vd => vd.IsAttackingTarget ? 1 : 100)
-                .OrderBy(vd => vd.IsAttackingPlayer ? 0 : 100)
+                //.OrderBy(vd => vd.Distance)
+                .OrderBy(vd => GetVictimTargetPriority(vd))
                 .ThenBy(vd => vd.Distance)
                 .Select(vd => new VictimPed(vd.Ped, GetVictimType(vd)))
                 .Take(pedCount)
@@ -180,7 +202,7 @@ namespace VRoguePed
             {
                 return VictimType.PLAYER_ATTACKER;
             }
-            else if (victimData.IsAttackingTarget || victimData.IsAttackingRoguePeds)
+            else if (victimData.IsAttackingTarget || victimData.IsAttackingOtherRoguePeds)
             {
                 return VictimType.ROGUE_PED_ATTACKER;
             }
