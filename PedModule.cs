@@ -105,16 +105,16 @@ namespace VRoguePed
                         }
                         else if (RoguePedsFollowPlayer)
                         {
-                            roguePed.State = RogueState.FOLLOWING_PLAYER;
+                            roguePed.State = RoguePedState.FOLLOWING_PLAYER;
                         }
-                        else if (roguePed.State != RogueState.RUNNING_TOWARDS_PLAYER)
+                        else if (roguePed.State != RoguePedState.RUNNING_TOWARDS_PLAYER)
                         {
                             if (roguePed.HasValidVictim())
                             {
                                 if(!PedUtil.IsVictimInAttackingRange(roguePed, roguePed.Victim))
                                 {
                                     removeVictimPed = true;
-                                    roguePed.State = RogueState.LOOKING_FOR_VICTIM;
+                                    roguePed.State = RoguePedState.LOOKING_FOR_VICTIM;
                                 }
                             }
                             else if (roguePed.Victim != null)
@@ -126,7 +126,7 @@ namespace VRoguePed
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
                                 //clearTasks = true;
-                                roguePed.State = RogueState.RUNNING_TOWARDS_PLAYER;
+                                roguePed.State = RoguePedState.RUNNING_TOWARDS_PLAYER;
                             }
                         }
 
@@ -175,11 +175,11 @@ namespace VRoguePed
 
                     if (roguePed != null && roguePed.IsValid())
                     {
-                        sub += "[i=" + i + "|TS=" + roguePed.Ped.TaskSequenceProgress +
-                            ",W=" + (PedUtil.IsPedWanderingAround(roguePed.Ped) ? "1" : "0") +
-                            "|D=" + ((int)roguePed.DistanceFromPlayer()) +
-                            "|S=" + roguePed.State.ToString().Split('_')[0].Substring(0, 2) +
-                            "|V=" + (!Util.IsValid(roguePed.Victim) ? "-1" : ("@" + ((int)roguePed.DistanceFromVictim()) + "]"));
+                        sub += "[i=" + i + "| TS=" + roguePed.Ped.TaskSequenceProgress +
+                            "| W=" + (PedUtil.IsPedWanderingAround(roguePed.Ped) ? "1" : "0") +
+                            "| D=" + ((int)roguePed.DistanceFromPlayer()) +
+                            "| S=" + roguePed.State.ToString().Split('_')[0].Substring(0, 2) +
+                            "| V=" + (!Util.IsValid(roguePed.Victim) ? "-1" : ("@" + ((int)roguePed.DistanceFromVictim()) + "]"));
 
                         bool hasToClearTasks = false;
 
@@ -202,7 +202,7 @@ namespace VRoguePed
                         {
                             if (!roguePed.Ped.IsInVehicle())
                             {
-                                Util.Notify("RoguePed[" + i + "] Clearing tasks...");
+                                //Util.Notify("RoguePed[" + i + "] Clearing tasks...");
                                 roguePed.Ped.Task.ClearAll();
                             }
                         }
@@ -211,17 +211,17 @@ namespace VRoguePed
                         //{
                         //    continue;
                         //}
-                        else if (roguePed.State == RogueState.LOOKING_FOR_VICTIM)
+                        else if (roguePed.State == RoguePedState.LOOKING_FOR_VICTIM)
                         {
                             //sub += "[LOOKING_FOR_VICTIM]";
 
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
-                                roguePed.State = RogueState.RUNNING_TOWARDS_PLAYER;
+                                roguePed.State = RoguePedState.RUNNING_TOWARDS_PLAYER;
                             }
                             else if (RoguePedsFollowPlayer)
                             {
-                                roguePed.State = RogueState.FOLLOWING_PLAYER;
+                                roguePed.State = RoguePedState.FOLLOWING_PLAYER;
                             }
                             else if (hasReachedInterval)
                             {
@@ -240,9 +240,9 @@ namespace VRoguePed
                                 {
                                     roguePed.Ped.Task.ClearAll();
 
-                                    UI.Notify("Util.IsValid(victim) == true");
+                                    //UI.Notify("Util.IsValid(victim) == true");
                                     roguePed.Victim = victim;
-                                    roguePed.State = RogueState.ATTACKING_VICTIM;
+                                    roguePed.State = RoguePedState.ATTACKING_VICTIM;
                                     Core.ProcessedPeds.Add(victim.Ped);
                                 }
                                 else if (!PedUtil.IsPedWanderingAround(roguePed.Ped))
@@ -285,17 +285,17 @@ namespace VRoguePed
                                 roguePed.State = RogueState.LOOKING_FOR_VICTIM;
                             }
                         }*/
-                        else if (roguePed.State == RogueState.ATTACKING_VICTIM)
+                        else if (roguePed.State == RoguePedState.ATTACKING_VICTIM)
                         {
                             //sub += "[ATTACKING_VICTIM]";
 
                             if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
-                                roguePed.State = RogueState.RUNNING_TOWARDS_PLAYER;
+                                roguePed.State = RoguePedState.RUNNING_TOWARDS_PLAYER;
                             }
                             else if (RoguePedsFollowPlayer)
                             {
-                                roguePed.State = RogueState.FOLLOWING_PLAYER;
+                                roguePed.State = RoguePedState.FOLLOWING_PLAYER;
                             }
                             else if (roguePed.HasValidVictim())
                             {
@@ -342,16 +342,16 @@ namespace VRoguePed
                             }
                             else
                             {
-                                roguePed.State = RogueState.LOOKING_FOR_VICTIM;
+                                roguePed.State = RoguePedState.LOOKING_FOR_VICTIM;
                             }
                         }
-                        else if (roguePed.State == RogueState.RUNNING_TOWARDS_PLAYER)
+                        else if (roguePed.State == RoguePedState.RUNNING_TOWARDS_PLAYER)
                         {
                             //sub += "[RUNNING_TOWARDS_PLAYER]";
 
                             if (RoguePedsFollowPlayer)
                             {
-                                roguePed.State = RogueState.FOLLOWING_PLAYER;
+                                roguePed.State = RoguePedState.FOLLOWING_PLAYER;
                             }
                             else if (roguePed.DistanceFromPlayer() >= MaxRoguePedDistanceFromPlayer)
                             {
@@ -362,10 +362,10 @@ namespace VRoguePed
                             }
                             else
                             {
-                                roguePed.State = RogueState.LOOKING_FOR_VICTIM;
+                                roguePed.State = RoguePedState.LOOKING_FOR_VICTIM;
                             }
                         }
-                        else if (roguePed.State == RogueState.FOLLOWING_PLAYER)
+                        else if (roguePed.State == RoguePedState.FOLLOWING_PLAYER)
                         {
                             //sub += "[FOLLOWING_PLAYER]";
 
@@ -415,7 +415,7 @@ namespace VRoguePed
                                     PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.LeaveVehicle(); });
                                 }
 
-                                roguePed.State = RogueState.LOOKING_FOR_VICTIM;
+                                roguePed.State = RoguePedState.LOOKING_FOR_VICTIM;
                             }
                         }
 

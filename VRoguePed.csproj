@@ -77,7 +77,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="RoguePed.cs" />
-    <Compile Include="RogueState.cs" />
+    <Compile Include="RoguePedState.cs" />
     <Compile Include="TestModule.cs" />
     <Compile Include="TriggerCondition.cs" />
     <Compile Include="Util.cs" />

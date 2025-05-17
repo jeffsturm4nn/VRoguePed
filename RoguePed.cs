@@ -16,7 +16,7 @@ namespace VRoguePed
             Ped = ped;
             IsInUse = true;
             PlayerVehicleSeat = playerVehicleSeat;
-            State = RogueState.LOOKING_FOR_VICTIM;
+            State = RoguePedState.LOOKING_FOR_VICTIM;
             Blip = blip;
             ClearTasksTime = lifetimeInMs;
             TargetCombatDuration = 0;
@@ -33,7 +33,7 @@ namespace VRoguePed
             IsInUse = true;
             Victim = victim;
             PlayerVehicleSeat = playerVehicleSeat;
-            State = RogueState.LOOKING_FOR_VICTIM;
+            State = RoguePedState.LOOKING_FOR_VICTIM;
             Blip = blip;
             ClearTasksTime = lifetimeInMs;
             TargetCombatDuration = 0;
@@ -52,7 +52,7 @@ namespace VRoguePed
 
         public VictimPed Victim { get; set; }
 
-        public RogueState State { get; set; }
+        public RoguePedState State { get; set; }
 
         public Blip Blip { get; set; }
 
