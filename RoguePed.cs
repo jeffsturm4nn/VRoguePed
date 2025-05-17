@@ -85,6 +85,15 @@ namespace VRoguePed
             return -1.0f;
         }
 
+        public float DistanceFromVictim(VictimPed victimPed)
+        {
+            if(Util.IsValid(victimPed))
+            {
+                return (Ped.Position.DistanceTo(victimPed.Ped.Position));
+            }
+
+            return -1.0f;
+        }
         public float DistanceFromPlayer()
         {
             if (IsValid())

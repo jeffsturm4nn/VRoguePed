@@ -133,19 +133,19 @@ namespace VRoguePed
 
         public static int GetVictimTargetPriority(VictimData victimData)
         {
-            if(victimData.IsAttackingPlayer)
+            if (victimData.IsAttackingPlayer)
             {
                 return -500;
             }
-            else if(victimData.IsAttackingTarget)
+            else if (victimData.IsAttackingTarget)
             {
                 return 0;
             }
-            else if(victimData.IsAttackingOtherRoguePeds)
+            else if (victimData.IsAttackingOtherRoguePeds)
             {
                 return 500;
             }
-            else if(victimData.IsCop)
+            else if (victimData.IsCop)
             {
                 return 1000;
             }
@@ -180,7 +180,8 @@ namespace VRoguePed
                     IsAttackingTarget = (p.IsInCombatAgainst(target) || HasPedAttackedAnother(target, p)),
                     IsAttackingPlayer = p.IsInCombatAgainst(Game.Player.Character)
                 })
-                //.OrderBy(vd => vd.Distance)
+                .Where(vd => !(RoguePedsBodyguardMode &&
+                !(vd.IsAttackingPlayer || vd.IsAttackingTarget || vd.IsAttackingOtherRoguePeds)))
                 .OrderBy(vd => GetVictimTargetPriority(vd))
                 .ThenBy(vd => vd.Distance)
                 .Select(vd => new VictimPed(vd.Ped, GetVictimType(vd)))
@@ -251,6 +252,27 @@ namespace VRoguePed
         public static float Distance(Ped ped1, Ped ped2)
         {
             return ped1.Position.DistanceTo(ped2.Position);
+        }
+
+        public static bool IsVictimInAttackingRange(RoguePed roguePed, VictimPed victimPed)
+        {
+            if (victimPed.Type != VictimType.PLAYER_ATTACKER &&
+                                    victimPed.Type != VictimType.PLAYER_TARGET &&
+                                    victimPed.Type != VictimType.ROGUE_PED_ATTACKER)
+            {
+                if ((roguePed.DistanceFromVictim(victimPed) >= MaxVictimPedOnFootChaseDistance) ||
+                     ((victimPed.Ped.IsFleeing || victimPed.Ped.Velocity.Length() > 6f)
+                     && roguePed.DistanceFromVictim(victimPed) >= MaxVictimPedInVehicleChaseDistance))
+                {
+                    return false;
+                }
+            }
+            else if (victimPed.Ped.IsFleeing || victimPed.Ped.Velocity.Length() > 6f)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public static bool IsPedFatallyInjured(Ped ped)

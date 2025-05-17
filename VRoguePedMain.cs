@@ -46,6 +46,8 @@ namespace VRoguePed
                 return;
             }
 
+            PedModule.sub = "";
+
             InputModule.CheckForKeysHeldDown();
             InputModule.CheckForKeysReleased();
 
