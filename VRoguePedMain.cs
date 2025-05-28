@@ -53,6 +53,7 @@ namespace VRoguePed
 
             PedModule.CheckValidRoguePeds();
             PedModule.UpdateRoguePedsState();
+            PedModule.UpdateRoguePedTargets();
 
             PedPool.StepUpdateTime(Constants.UPDATE_INTERVAL);
         }

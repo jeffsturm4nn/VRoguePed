@@ -127,8 +127,8 @@ namespace VRoguePed
         public override string ToString()
         {
             return "RoguePed{Ped=" + (Ped != null ? Ped.ToString() : "null") +
-                ", Victims=" + (Victim != null ? Victim.ToString() : "null") +
-                ", PlayerVehicleSeat=" + Enum.GetName(typeof(VehicleSeat), PlayerVehicleSeat) ;
+                ", Victim=" + (Victim != null ? Victim.ToString() : "null") +
+                ", PlayerVehicleSeat=" + Enum.GetName(typeof(VehicleSeat), PlayerVehicleSeat) + "}" ;
         }
     }
 }

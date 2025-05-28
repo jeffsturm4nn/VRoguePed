@@ -11,7 +11,7 @@ namespace VRoguePed
     {
         public static void MakePedPerformActionProc()
         {
-            Ped nearestPed = PedUtil.GetNearestValidRoguePeds(Game.Player.Character, 1, 40f, null).FirstOrDefault();
+            Ped nearestPed = PedUtil.GetNearestValidRoguePeds(1, 40f, null).FirstOrDefault();
             RaycastResult raycastResult = World.GetCrosshairCoordinates();
 
             if (nearestPed != null && raycastResult.DitHitAnything)

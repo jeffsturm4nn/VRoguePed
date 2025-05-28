@@ -30,5 +30,7 @@ namespace VRoguePed
         public bool IsCop {  get; set; }
         public bool IsAttackingTarget {  get; set; }
         public bool IsAttackingPlayer {  get; set; }
+        public RoguePed AttackedRoguePed { get; set; }
+        public int AttackersCount { get; set; }
     }
 }

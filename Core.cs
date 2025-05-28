@@ -14,10 +14,14 @@ namespace VRoguePed
     {
         public static bool ModActive = false;
         public static bool KeepRoguePeds = false;
-        public static List<RoguePed> RoguePeds = new List<RoguePed>();
-        public static List<Ped> VictimPeds = new List<Ped>();
-        public static List<Ped> ProcessedPeds = new List<Ped>();
+        public static List<VictimData> VictimPedData = new List<VictimData>();
+        public static List<RoguePed> RoguePeds = new List<RoguePed>(100);
+        public static List<Ped> ProcessedPeds = new List<Ped>(100);
+        public static Dictionary<int, int?> ProcessedPedCountMap = new Dictionary<int, int?>(200);
         public static List<ControlKey> ControlKeys = new List<ControlKey>();
+
+        public static Dictionary<int, RoguePed> RoguePedsMap = new Dictionary<int, RoguePed>();
+        public static Dictionary<int, Ped> ProcessedPedsMap = new Dictionary<int, Ped>();
 
         public static void ToggleModActiveProc()
         {
