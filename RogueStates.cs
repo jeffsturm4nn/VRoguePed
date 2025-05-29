@@ -78,12 +78,13 @@ namespace VRoguePed
                 {
                     if (!PedUtil.IsPedWanderingAround(roguePed.Ped))
                     {
+                        //roguePed.Ped.Task.ClearAll();
                         PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.WanderAround(Game.Player.Character.Position, MaxRoguePedWanderDistance); });
-                    } 
+                    }
                 }
                 else
                 {
-                    roguePed.Ped.Task.ClearAll();
+                    //roguePed.Ped.Task.ClearAll();
                     roguePed.State = RoguePedState.ATTACKING_VICTIM;
                 }
 
@@ -165,19 +166,21 @@ namespace VRoguePed
             {
                 if (hasReachedInterval)
                 {
-                    Vector3 offsetFromPlayer = new Vector3(0f, 2f, 0f);
+                    Vector3 offsetFromPlayer = new Vector3(0f, 1.5f, 0f);
 
-                    if (Game.Player.Character.IsRunning || Game.Player.Character.IsSprinting || roguePed.DistanceFromPlayer() > 12f)
+                    if (Game.Player.Character.IsRunning || Game.Player.Character.IsSprinting || roguePed.DistanceFromPlayer() > 11f)
                     {
-                        roguePed.Ped.Task.RunTo((Game.Player.Character.Position + offsetFromPlayer), false);
+                        roguePed.Ped.Task.RunTo((Game.Player.Character.Position + offsetFromPlayer), false, 2000);
                     }
                     else if (!Game.Player.Character.IsInVehicle())
                     {
+                        roguePed.PlayerVehicleSeat = VehicleSeat.None;
+
                         if (!roguePed.Ped.IsInVehicle())
                         {
-                            if (roguePed.DistanceFromPlayer() > 4f)
+                            if (roguePed.DistanceFromPlayer() > 3.5f)
                             {
-                                roguePed.Ped.Task.GoTo(Game.Player.Character, offsetFromPlayer, 1000);
+                                roguePed.Ped.Task.GoTo(Game.Player.Character, offsetFromPlayer, 2000);
                             }
                         }
                         else
@@ -185,16 +188,22 @@ namespace VRoguePed
                             PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.LeaveVehicle(); });
                         }
                     }
-                    else if (!roguePed.Ped.IsInVehicle(Game.Player.Character.CurrentVehicle))
+                    else if (!roguePed.Ped.IsInVehicle(Game.Player.Character.CurrentVehicle) && !roguePed.Ped.IsGettingIntoAVehicle)
                     {
-                        roguePed.PlayerVehicleSeat = VehicleUtil.GetPlayerVehicleFreeSeat();
+                        if (roguePed.PlayerVehicleSeat == VehicleSeat.None)
+                        {
+                            roguePed.PlayerVehicleSeat = VehicleUtil.GetPlayerVehicleFreeSeat(); 
+                        }
 
                         if (roguePed.PlayerVehicleSeat != VehicleSeat.None)
                         {
+                            roguePed.Ped.Task.ClearAll();
+
                             PedUtil.PerformTaskSequence(roguePed.Ped, ts =>
                             {
-                                ts.AddTask.EnterVehicle(Game.Player.Character.CurrentVehicle, roguePed.PlayerVehicleSeat, -1, 100f);
+                                ts.AddTask.EnterVehicle(Game.Player.Character.CurrentVehicle, roguePed.PlayerVehicleSeat, -1);
                             });
+                            //roguePed.Ped.Task.EnterVehicle(Game.Player.Character.CurrentVehicle, roguePed.PlayerVehicleSeat, -1);
                         }
                     }
                 }
@@ -205,8 +214,11 @@ namespace VRoguePed
                 {
                     PedUtil.PerformTaskSequence(roguePed.Ped, ts => { ts.AddTask.LeaveVehicle(); });
                 }
-
-                roguePed.State = RoguePedState.LOOKING_FOR_VICTIM;
+                else
+                {
+                    roguePed.PlayerVehicleSeat = VehicleSeat.None;
+                    roguePed.State = RoguePedState.LOOKING_FOR_VICTIM;
+                }
             }
         }
     }

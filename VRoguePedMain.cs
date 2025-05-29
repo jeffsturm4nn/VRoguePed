@@ -42,7 +42,7 @@ namespace VRoguePed
         {
             if (!ModActive)
             {
-                Script.Wait(1);
+                Script.Wait(Constants.UPDATE_INTERVAL);
                 return;
             }
 

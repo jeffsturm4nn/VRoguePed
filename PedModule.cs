@@ -60,7 +60,7 @@ namespace VRoguePed
                 if (roguePed != null && roguePed.IsValid())
                 {
                     roguePed.IsInUse = false;
-                    roguePed.Ped.Kill();
+                    //roguePed.Ped.Kill();
                 }
             }
         }
@@ -167,11 +167,13 @@ namespace VRoguePed
 
                     if (roguePed != null && roguePed.IsValid())
                     {
-                        //sub += "[i=" + i + "| TS=" + roguePed.Ped.TaskSequenceProgress +
-                        //    "| W=" + (PedUtil.IsPedWanderingAround(roguePed.Ped) ? "1" : "0") +
-                        //    "| D=" + ((int)roguePed.DistanceFromPlayer()) +
-                        //    "| S=" + roguePed.State.ToString().Split('_')[0].Substring(0, 2) +
-                        //    "| V=" + (!Util.IsValid(roguePed.Victim) ? "-1" : ("@" + ((int)roguePed.DistanceFromVictim()) + "]"));
+                        sub += "[i=" + i + "| TS=" + roguePed.Ped.TaskSequenceProgress +
+                            "| W=" + (PedUtil.IsPedWanderingAround(roguePed.Ped) ? "1" : "0") +
+                            "| D=" + ((int)roguePed.DistanceFromPlayer()) +
+                            "| S=" + roguePed.State.ToString().Split('_')[0].Substring(0, 2) +
+                            "| V=" + (!Util.IsValid(roguePed.Victim) ? "-1" : ("@" + ((int)roguePed.DistanceFromVictim()))) +
+                            "| St=" + roguePed.PlayerVehicleSeat +
+                            "]";
 
                         bool hasToClearTasks = false;
 

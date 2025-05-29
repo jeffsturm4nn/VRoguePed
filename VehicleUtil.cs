@@ -31,7 +31,7 @@ namespace VRoguePed
         {
             Ped player = Game.Player.Character;
 
-            if (player.IsInVehicle() && player.CurrentVehicle.PassengerSeats > 0)
+            if (player.IsSittingInVehicle() && player.CurrentVehicle.PassengerSeats > 0)
             {
                 for (int i = player.CurrentVehicle.PassengerSeats - 1; i >= 0; i--)
                 {
