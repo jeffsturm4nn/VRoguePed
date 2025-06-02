@@ -1,7 +1,8 @@
 ﻿
 enum RoguePedState
 {
-    IDLE = 0,
+    NONE = 0,
+    IDLE,
     RUNNING_TOWARDS_VICTIM,
     RUNNING_TOWARDS_PLAYER,
     LOOKING_FOR_VICTIM,

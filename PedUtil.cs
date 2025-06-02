@@ -16,10 +16,6 @@ namespace VRoguePed
 {
     internal class PedUtil
     {
-        private static List<Ped> NearbyPeds = new List<Ped>(300);
-        private static List<Ped> ValidPeds = new List<Ped>(300);
-        private static List<VictimPed> VictimPeds = new List<VictimPed>(300);
-
         public static int Count(Ped ped, List<Ped> pedList)
         {
             int count = 0;
@@ -129,13 +125,13 @@ namespace VRoguePed
             roguePed.Weapons.Give(RoguePedWeaponHash, 99999, true, true);
             roguePed.MaxHealth = RoguePedHealth;
             roguePed.Health = RoguePedHealth;
-            roguePed.CanRagdoll = false;
+            roguePed.CanRagdoll = true;
             roguePed.CanSufferCriticalHits = false;
             roguePed.CanWrithe = false;
             roguePed.MaxSpeed = 100f;
             roguePed.WetnessHeight = 6f;
             roguePed.AlwaysKeepTask = true;
-            roguePed.BlockPermanentEvents = true;
+            roguePed.BlockPermanentEvents = false;
             roguePed.FiringPattern = FiringPattern.FullAuto;
             roguePed.CanSwitchWeapons = true;
         }
@@ -192,7 +188,7 @@ namespace VRoguePed
             {
                 return 0;
             }
-            else if (victimData.AttackedRoguePed != null || victimData.IsAttackingOtherRoguePeds 
+            else if (victimData.AttackedRoguePed != null || victimData.IsAttackingOtherRoguePeds
                 || victimData.IsAttackingTarget)
             {
                 return 500;
@@ -331,9 +327,9 @@ namespace VRoguePed
             })
             .Where(vd =>
                 !(RoguePedsBodyguardMode &&
-                !(vd.IsAttackingPlayer || Util.IsValid(vd.AttackedRoguePed)))
+                !(vd.IsAttackingPlayer || Util.IsValid(vd.AttackedRoguePed) || (vd.IsCop && Game.Player.WantedLevel > 0)))
             )
-            //.OrderBy(vd => GetVictimTargetPriority(vd))
+            .OrderBy(vd => GetVictimTargetPriority(vd))
             .ToList();
         }
 

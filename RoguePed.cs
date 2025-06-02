@@ -11,15 +11,14 @@ namespace VRoguePed
 {
     internal class RoguePed
     {
-        public RoguePed(Ped ped, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null, int lifetimeInMs = 300*1000)
+        public RoguePed(Ped ped, VehicleSeat playerVehicleSeat = VehicleSeat.None, Blip blip = null, int lifetimeInMs = 300 * 1000)
         {
             Ped = ped;
             IsInUse = true;
             PlayerVehicleSeat = playerVehicleSeat;
-            State = RoguePedState.LOOKING_FOR_VICTIM;
             Blip = blip;
             ClearTasksTime = lifetimeInMs;
-            TargetCombatDuration = 0;
+            UpdateTargetTime = 0;
 
             if (Ped == null)
             {
@@ -33,10 +32,9 @@ namespace VRoguePed
             IsInUse = true;
             Victim = victim;
             PlayerVehicleSeat = playerVehicleSeat;
-            State = RoguePedState.LOOKING_FOR_VICTIM;
             Blip = blip;
             ClearTasksTime = lifetimeInMs;
-            TargetCombatDuration = 0;
+            UpdateTargetTime = 0;
 
             if (Ped == null)
             {
@@ -44,21 +42,34 @@ namespace VRoguePed
             }
         }
 
+        private RoguePedState _state = RoguePedState.LOOKING_FOR_VICTIM;
+        private RoguePedState _oldState = RoguePedState.NONE;
+
         public Ped Ped { get; set; }
 
-        public bool IsInUse {  get; set; }
+        public bool IsInUse { get; set; }
 
         public VehicleSeat PlayerVehicleSeat { get; set; }
 
         public VictimPed Victim { get; set; }
 
-        public RoguePedState State { get; set; }
+        public RoguePedState State
+        {
+            get => _state;
+            set
+            {
+                _oldState = _state;
+                _state = value;
+            }
+        }
+
+        public RoguePedState OldState { get; private set; }
 
         public Blip Blip { get; set; }
 
         public int ClearTasksTime { get; set; }
 
-        public int TargetCombatDuration { get; set; }
+        public double UpdateTargetTime { get; set; }
 
         public bool IsValid()
         {
@@ -77,7 +88,7 @@ namespace VRoguePed
 
         public float DistanceFromVictim()
         {
-            if(IsValid() && HasValidVictim())
+            if (IsValid() && HasValidVictim())
             {
                 return (Ped.Position.DistanceTo(Victim.Ped.Position));
             }
@@ -87,7 +98,7 @@ namespace VRoguePed
 
         public float DistanceFromVictim(VictimPed victimPed)
         {
-            if(Util.IsValid(victimPed))
+            if (Util.IsValid(victimPed))
             {
                 return (Ped.Position.DistanceTo(victimPed.Ped.Position));
             }
@@ -107,7 +118,7 @@ namespace VRoguePed
 
         public bool IsInCombatWithVictim()
         {
-            if(IsValid() && HasValidVictim())
+            if (IsValid() && HasValidVictim())
             {
                 return (Ped.IsInCombatAgainst(Victim.Ped));
             }
@@ -128,7 +139,7 @@ namespace VRoguePed
         {
             return "RoguePed{Ped=" + (Ped != null ? Ped.ToString() : "null") +
                 ", Victim=" + (Victim != null ? Victim.ToString() : "null") +
-                ", PlayerVehicleSeat=" + Enum.GetName(typeof(VehicleSeat), PlayerVehicleSeat) + "}" ;
+                ", PlayerVehicleSeat=" + Enum.GetName(typeof(VehicleSeat), PlayerVehicleSeat) + "}";
         }
     }
 }
