@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
@@ -431,6 +432,11 @@ namespace VRoguePed
             return ped1.Position.DistanceTo(ped2.Position);
         }
 
+        public static float DistanceSquared(Ped ped1, Ped ped2)
+        {
+            return ped1.Position.DistanceToSquared(ped2.Position);
+        }
+
         public static bool IsVictimInAttackingRange(RoguePed roguePed, VictimPed victimPed)
         {
             if (victimPed.Type != VictimType.PLAYER_ATTACKER &&
@@ -472,14 +478,57 @@ namespace VRoguePed
 
         public static VictimData GetNearestVictimPed(RoguePed roguePed, List<VictimData> victimDataList)
         {
-            return victimDataList
-                .Where(vd => ProcessedPedCount(vd.Ped) < MaxRoguePedsPerTarget &&
+            List<VictimData> filteredList = new List<VictimData>();
+            VictimData nearestVictim = null;
+            int nearestPriority = 100000;
+            float nearestDistanceSquared = 1000000f;
+
+            for (int i = 0; i < victimDataList.Count; i++)
+            {
+                VictimData vd = victimDataList[i];
+
+                if (ProcessedPedCount(vd.Ped) < MaxRoguePedsPerTarget &&
                 vd.Ped != Game.Player.Character &&
                 vd.Ped.RelationshipGroup != FriendlyRoguePedsGroupHash &&
                 !IsRoguePed(vd.Ped))
-                .OrderBy(vd => PedUtil.GetVictimTargetPriority(vd))
-                .ThenBy(vd => Distance(roguePed.Ped, vd.Ped))
-                .FirstOrDefault();
+                {
+                    filteredList.Add(vd);
+                }
+            }
+
+            for (int i = 0; i < filteredList.Count; i++)
+            {
+                VictimData vd = filteredList[i];
+                int currentPriority = GetVictimTargetPriority(vd);
+                float currentDistanceSquared = DistanceSquared(vd.Ped, roguePed.Ped);
+
+                if (currentPriority < nearestPriority)
+                {
+                    nearestVictim = vd;
+                    nearestPriority = currentPriority;
+                    nearestDistanceSquared = currentDistanceSquared;
+                }
+                else if(currentPriority == nearestPriority)
+                {
+                    if(currentDistanceSquared < nearestDistanceSquared)
+                    {
+                        nearestVictim = vd;
+                        nearestPriority = currentPriority;
+                        nearestDistanceSquared = currentDistanceSquared;
+                    }
+                }
+            }
+
+            return nearestVictim;
+
+            //return victimDataList
+            //    .Where(vd => ProcessedPedCount(vd.Ped) < MaxRoguePedsPerTarget &&
+            //    vd.Ped != Game.Player.Character &&
+            //    vd.Ped.RelationshipGroup != FriendlyRoguePedsGroupHash &&
+            //    !IsRoguePed(vd.Ped))
+            //    .OrderBy(vd => PedUtil.GetVictimTargetPriority(vd))
+            //    .ThenBy(vd => DistanceSquared(roguePed.Ped, vd.Ped))
+            //    .FirstOrDefault();
         }
     }
 }

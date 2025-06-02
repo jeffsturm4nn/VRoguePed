@@ -279,8 +279,14 @@ namespace VRoguePed
                                     roguePed.Victim = new VictimPed(nearestVictimData);
                                     PedUtil.InsertVictimPed(roguePed.Victim);
 
-                                    idleRoguePeds.Remove(roguePed);
                                     assignedVictimPedList.Add(nearestVictimData);
+
+                                    idleRoguePeds.Remove(roguePed);
+
+                                    if (victimsPerTarget == 1)
+                                    {
+                                        victimDataList.Remove(nearestVictimData); 
+                                    }
                                 }
                             }
 

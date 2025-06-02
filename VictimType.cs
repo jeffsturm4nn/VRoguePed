@@ -8,7 +8,8 @@ namespace VRoguePed
 {
     internal enum VictimType
     {
-        NORMAL_PED = 0,
+        NONE = 0,
+        NORMAL_PED,
         ROGUE_PED_ATTACKER,
         PLAYER_ATTACKER,
         PLAYER_TARGET
